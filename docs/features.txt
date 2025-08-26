@@ -1,0 +1,5 @@
+﻿1. user authentication
+2. score submission
+3. real-time leaderboard updates
+4. score history tracking
+5. Redis sorted sets will be used to manage and query the leaderboards efficiently
