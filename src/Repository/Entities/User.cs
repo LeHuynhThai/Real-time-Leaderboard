@@ -19,5 +19,13 @@ namespace Repository.Entities
         public string PasswordHash { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public UserRole Role { get; set; } = UserRole.User;
+    }
+
+    public enum UserRole
+    {
+        Admin,
+        User
     }
 }
