@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Entities
 {
-    internal class User
+    public class User
     {
         [Key]
         public int Id { get; set; }
