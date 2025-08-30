@@ -1,0 +1,16 @@
+﻿using Repository.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Service.Interfaces
+{
+    public interface IUserService
+    {
+        Task<User> Register(User user);
+        Task<User> Login(string username, string passwordHash);
+        bool VerifyPassword(string password, string hashedPassword);
+    }
+}

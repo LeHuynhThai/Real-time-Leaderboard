@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Entities
 {
-    internal class User
+    public class User
     {
         [Key]
         public int Id { get; set; }
@@ -19,5 +19,15 @@ namespace Repository.Entities
         public string PasswordHash { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public UserRole Role { get; set; } = UserRole.User;
+
+        public virtual ICollection<ScoreSubmission> Scores { get; set; } = new List<ScoreSubmission>();
+    }
+
+    public enum UserRole
+    {
+        Admin,
+        User
     }
 }
