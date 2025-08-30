@@ -21,6 +21,8 @@ namespace Repository.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public UserRole Role { get; set; } = UserRole.User;
+
+        public virtual ICollection<ScoreSubmission> Scores { get; set; } = new List<ScoreSubmission>();
     }
 
     public enum UserRole
