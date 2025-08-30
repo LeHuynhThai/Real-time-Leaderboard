@@ -20,6 +20,10 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IScoreSubmissionRepository, ScoreSubmissionRepository>();
+builder.Services.AddScoped<IScoreSubmissionService, ScoreSubmissionService>();
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
