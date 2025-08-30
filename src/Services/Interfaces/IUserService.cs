@@ -10,5 +10,7 @@ namespace Service.Interfaces
     public interface IUserService
     {
         Task<User> Register(User user);
+        Task<User> Login(string username, string passwordHash);
+        bool VerifyPassword(string password, string hashedPassword);
     }
 }
