@@ -23,5 +23,10 @@ namespace Repository.Implementations
             await _context.SaveChangesAsync();
             return scoreSubmission;
         }
+
+        public async Task<List<ScoreSubmission>> GetAllScoreSubmissions()
+        {
+            return await _context.ScoreSubmissions.ToListAsync();
+        }
     }
 }

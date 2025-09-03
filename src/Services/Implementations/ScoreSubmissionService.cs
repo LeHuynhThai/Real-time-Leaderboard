@@ -24,5 +24,10 @@ namespace Service.Implementations
         {
             return await _scoreSubmissionRepository.CreateScoreSubmission(scoreSubmission);
         }
+
+        public async Task<List<ScoreSubmission>> GetAllScoreSubmissions()
+        {
+            return await _scoreSubmissionRepository.GetAllScoreSubmissions();
+        }
     }
 }
