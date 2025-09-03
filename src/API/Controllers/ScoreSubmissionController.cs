@@ -30,6 +30,13 @@ namespace API.Controllers
             var result = await _scoreSubmissionService.CreateScoreSubmission(scoreSubmission);
             return Ok(result);
         }   
+
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllScoreSubmissions()
+        {
+            var result = await _scoreSubmissionService.GetAllScoreSubmissions();
+            return Ok(result);
+        }
     }
 }
 
