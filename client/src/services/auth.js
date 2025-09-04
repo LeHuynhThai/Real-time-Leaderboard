@@ -29,6 +29,13 @@ export async function login(username, password) {
         }
       ),
     })
+    
+    // Save JWT token and user data
+    if (response.success && response.data) {
+      setToken(response.data.token)
+      setUser(response.data.user)
+    }
+    
     return response
   } catch (error) {
     throw new Error(error.message || 'Error logging in')
@@ -37,12 +44,17 @@ export async function login(username, password) {
 
 export async function logout() {
   try {
-    const response = await http('/api/user/logout', {
+    // Call API logout endpoint (optional with JWT)
+    await http('/api/user/logout', {
       method: 'POST',
     })
-    return response
   } catch (error) {
-    throw new Error(error.message || 'Error logging out')
+    // Continue with client-side logout even if API call fails
+    console.warn('Logout API call failed:', error.message)
+  } finally {
+    // Always clean up client-side data
+    removeToken()
+    removeUser()
   }
 }
 

@@ -51,13 +51,9 @@ export default function SignIn() {
       const response = await login(formData.username, formData.password)
       console.log('Login response:', response)
       
-      if (response.success) {
-        // Persist user and auth state
-        if (response.data) {
-          setUser(response.data)
-        }
-        // Backend currently returns user object without token, so set a placeholder token
-        setToken(response.data?.token || 'logged-in')
+      if (response.success && response.data) {
+        // JWT token and user data are now saved in auth.js login function
+        console.log('Login successful, token saved')
         navigate('/home')
       } else {
         console.log('Login failed:', response.message)
