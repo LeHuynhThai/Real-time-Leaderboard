@@ -19,7 +19,7 @@ namespace Service.Implementations
             _userRepository = userRepository;
         }
 
-        public async Task<User> Login(string username, string passwordHash)
+        public async Task<User> Login(string username, string password)
         {
             var user = await _userRepository.GetUserByUsername(username);
             if (user == null)
@@ -27,7 +27,7 @@ namespace Service.Implementations
                 throw new Exception("User not found");
             }
 
-            if (!VerifyPassword(passwordHash, user.PasswordHash))
+            if (!VerifyPassword(password, user.PasswordHash))
             {
                 throw new Exception("Invalid password");
             }
