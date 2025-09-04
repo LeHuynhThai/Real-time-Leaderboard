@@ -10,10 +10,12 @@ namespace API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IJwtTokenService jwtTokenService)
         {
             _userService = userService;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpPost("register")]
@@ -42,7 +44,22 @@ namespace API.Controllers
             try
             {
                 var user = await _userService.Login(request.Username, request.Password);
-                return Ok(new { success = true, data = user });
+                
+                // Generate JWT token
+                var token = _jwtTokenService.GenerateToken(user);
+                
+                return Ok(new { 
+                    success = true, 
+                    data = new {
+                        user = new {
+                            userId = user.Id,
+                            userName = user.UserName,
+                            email = user.Email,
+                            role = user.Role.ToString()
+                        },
+                        token = token
+                    }
+                });
             }
             catch (System.Exception ex)
             {
@@ -53,7 +70,6 @@ namespace API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            HttpContext.Response.Cookies.Delete("token");
             return Ok(new { message = "Logged out successfully" });
         }
     }

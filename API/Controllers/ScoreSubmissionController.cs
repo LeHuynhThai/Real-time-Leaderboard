@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Repository.Entities;
 using Service.Interfaces;
 
@@ -7,6 +8,7 @@ namespace API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ScoreSubmissionController : ControllerBase
     {
         private readonly IScoreSubmissionService _scoreSubmissionService;
@@ -21,7 +23,7 @@ namespace API.Controllers
         {
             var scoreSubmission = new ScoreSubmission
             {
-                UserId = request.UserId,
+                UserId = // You will need to retrieve the UserId from the JWT claims here,
                 Score = request.Score,
                 CreatedAt = DateTime.UtcNow,
                 Status = SubmissionStatus.Approved
@@ -42,6 +44,5 @@ namespace API.Controllers
 
 public class SubmitScoreRequest
 {
-    public int UserId { get; set; }
     public int Score { get; set; }
 }
