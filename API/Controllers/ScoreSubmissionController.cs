@@ -23,7 +23,7 @@ namespace API.Controllers
         {
             var scoreSubmission = new ScoreSubmission
             {
-                UserId = // You will need to retrieve the UserId from the JWT claims here,
+                UserId = int.Parse(User.FindFirst("uid")?.Value ?? "0"),
                 Score = request.Score,
                 CreatedAt = DateTime.UtcNow,
                 Status = SubmissionStatus.Approved
@@ -40,9 +40,9 @@ namespace API.Controllers
             return Ok(result);
         }
     }
-}
 
-public class SubmitScoreRequest
-{
-    public int Score { get; set; }
+    public class SubmitScoreRequest
+    {
+        public int Score { get; set; }
+    }
 }
