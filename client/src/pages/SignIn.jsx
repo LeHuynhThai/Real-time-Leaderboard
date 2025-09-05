@@ -10,9 +10,11 @@ export default function SignIn() {
     password: ''
   })
   
+  // Error messages
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
 
+  // Handle form changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -26,6 +28,7 @@ export default function SignIn() {
     }
   }
 
+  // Validate form
   const validateForm = () => {
     const newErrors = {}
     if (!formData.username.trim()) {
@@ -38,6 +41,7 @@ export default function SignIn() {
     return Object.keys(newErrors).length === 0
   }
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
 
