@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import '../styles/Home.css'
 import Header from '../components/Header.jsx'
-import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth'
+import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
