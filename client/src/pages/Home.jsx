@@ -11,6 +11,7 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // Fetch leaderboard data when component mounts
   useEffect(() => {
     if(isAuthenticated()) {
       const currentUser = getCurrentUser()
