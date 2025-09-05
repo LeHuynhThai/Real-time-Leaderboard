@@ -73,6 +73,18 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Play Game Section */}
+          <div className="play-game-section" style={{ marginTop: 24, textAlign: 'center' }}>
+            <Link to="/play" className="play-game-button">
+              <div className="play-icon">🦕</div>
+              <div className="play-content">
+                <h3>Chơi T-Rex Game</h3>
+                <p>Nhảy qua chướng ngại vật và đạt điểm cao!</p>
+              </div>
+              <div className="play-arrow">→</div>
+            </Link>
+          </div>
+
           {/* Leaderboard Preview */}
           <div className="leaderboard-preview">
             <div className="section-header">

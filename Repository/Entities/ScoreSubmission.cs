@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Repository.Entities
 {
-    public class ScoreSubmission
+    public class ScoreSubmission 
     {
         public int Id { get; set; }
         public int UserId { get; set; }
