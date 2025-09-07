@@ -11,6 +11,7 @@ namespace Service.Implementations
     public class JwtTokenService : IJwtTokenService
     {
         private readonly IConfiguration _configuration;
+        private static readonly HashSet<string> _revokedTokens = new HashSet<string>();
         private readonly string _key;
         private readonly string _issuer;
         private readonly string _audience;

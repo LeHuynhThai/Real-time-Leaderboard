@@ -8,7 +8,7 @@ function Game() {
     <div style={{ height: '100vh', width: '100vw', margin: 0, padding: 0, backgroundColor: '#f7f7f7' }}>
       <iframe
         title="T-Rex Game"
-        src={`/game/dinosaur.html`}
+        src={`/dinosaur.html`}
         style={{ border: 'none', width: '100%', height: 'calc(100% - 100px)' }}
         allow="autoplay"
         onError={() => console.error('Iframe failed to load')}

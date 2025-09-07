@@ -53,8 +53,7 @@ export async function logout() {
     console.warn('Logout API call failed:', error.message)
   } finally {
     // Always clean up client-side data
-    removeToken()
-    removeUser()
+    clearAuth()
   }
 }
 
@@ -92,4 +91,10 @@ export function getCurrentUser() {
 // Xóa thông tin user
 export function removeUser() {
   localStorage.removeItem('user')
+}
+
+// Xóa toàn bộ thông tin xác thực (token + user)
+export function clearAuth() {
+  removeToken()
+  removeUser()
 }

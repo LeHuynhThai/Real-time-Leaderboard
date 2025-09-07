@@ -14,8 +14,7 @@ namespace Repository.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public SubmissionStatus Status { get; set; } = SubmissionStatus.Approved;
-
-        public virtual User? User { get; set; }
+        public virtual User User { get; set; }
     }
 
     public enum SubmissionStatus

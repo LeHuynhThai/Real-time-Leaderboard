@@ -29,5 +29,24 @@ namespace Repository.Implementations
         {
             return await _context.ScoreSubmissions.ToListAsync();
         }
+
+        public async Task<ScoreSubmission> GetUserById(int UserId)
+        {
+            return await _context.ScoreSubmissions.FindAsync(UserId);
+        }
+
+        public async Task<ScoreSubmission> UpdateScore(ScoreSubmission scoreSubmission)
+        {
+            _context.ScoreSubmissions.Update(scoreSubmission);
+            await _context.SaveChangesAsync();
+            return scoreSubmission;
+        }
+
+        public async Task<ScoreSubmission> GetScoreById(int userId)
+        {
+            return await _context.ScoreSubmissions
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
     }
 }

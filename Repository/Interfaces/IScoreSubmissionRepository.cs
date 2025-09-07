@@ -11,5 +11,8 @@ namespace Repository.Interfaces
     {
         Task<ScoreSubmission> CreateScoreSubmission(ScoreSubmission scoreSubmission);
         Task<List<ScoreSubmission>> GetAllScoreSubmissions();
+        Task<ScoreSubmission> GetUserById(int UserId);
+        Task<ScoreSubmission> UpdateScore(ScoreSubmission scoreSubmission);
+        Task<ScoreSubmission> GetScoreById(int UserId);
     }
 }

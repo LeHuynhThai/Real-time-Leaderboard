@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 
 <head>
     <title>T-Rex Game</title>
@@ -17,58 +17,6 @@
     <meta name="twitter:description" content="Check out the cool hidden game from Google Chrome!">
     <meta name="twitter:image:src" content="http://img.thecodepost.org/2015/01/trex.png">
     <script src="https://apis.google.com/js/platform.js" async defer></script>
-
-    <!-- Script để gửi điểm số đến API -->
-    <script type="text/javascript">
-        async function submitScore(score) {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.warn('User not authenticated, score not submitted');
-                    return;
-                }
-                const API_BASE_URL = 'https://localhost:7034';
-                const response = await fetch(`${API_BASE_URL}/api/ScoreSubmission/update-score`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        Score: score
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                console.log('Score submitted successfully:', result);
-                return result;
-            } catch (error) {
-                console.error('Error submitting score:', error);
-            }
-        }
-        
-        // Lưu trữ hàm gốc để có thể gọi lại sau
-        window.addEventListener('DOMContentLoaded', () => {
-            // Đảm bảo rằng Runner đã được định nghĩa
-            setTimeout(() => {
-                if (window.Runner) {
-                    const originalGameOver = window.Runner.prototype.gameOver;
-                    window.Runner.prototype.gameOver = function() {
-                        // Gọi hàm gameOver gốc
-                        originalGameOver.apply(this, arguments);
-                        
-                        // Dùng điểm được quy đổi giống như hiển thị trên UI
-                        const score = this.distanceMeter.getActualDistance(this.distanceRan);
-                        submitScore(score);
-                    };
-                }
-            }, 1000);
-        });
-    </script>
 
     <!--script type="text/javascript" src="a.js"></script-->
     <script type="text/javascript">
