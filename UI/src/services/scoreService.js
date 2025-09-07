@@ -1,24 +1,18 @@
 import { http } from './http'
 
-// Update score: create if not exists, or update only when higher
-export async function updateScore(score) {
+export async function submitScore(score) {
   try {
-    const response = await http('/api/ScoreSubmission/update-score', {
+    const response = await http('/api/ScoreSubmission/submit-score', {
       method: 'POST',
       body: JSON.stringify({
-        Score: score,
+        Score: score
       }),
     })
     return response
   } catch (error) {
-    console.error('Error updating score:', error)
-    throw new Error(error.message || 'Error updating score')
+    console.error('Error submitting score:', error)
+    throw new Error(error.message || 'Error submitting score')
   }
-}
-
-// Keep backward compatibility: submitScore delegates to updateScore
-export async function submitScore(score) {
-  return updateScore(score)
 }
 
 export async function getAllScores() {
