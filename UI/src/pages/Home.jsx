@@ -4,7 +4,7 @@ import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMyScore, getAllScores } from '../services/scoreService.js'
+import { getMyScore, getAllScores, getMyRank } from '../services/scoreService.js'
 
 export default function Home() {  
   const navigate = useNavigate()
@@ -30,6 +30,15 @@ export default function Home() {
       }
     } catch (e) {
       // ignore error, continue to fetch leaderboard
+    }
+
+    try {
+      const rankRes = await getMyRank()
+      if (rankRes?.success && rankRes?.data) {
+        setUser(prev => ({ ...prev, rank: rankRes.data.rank }))
+      }
+    } catch (e) {
+      // ignore
     }
 
     try {

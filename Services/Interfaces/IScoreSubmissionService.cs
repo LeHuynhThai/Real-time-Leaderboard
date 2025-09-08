@@ -12,5 +12,6 @@ namespace Service.Interfaces
         Task<List<ScoreSubmission>> GetLeaderboard(int ranking);
         Task<ScoreSubmission> SaveScore(int UserId, int score);
         Task<ScoreSubmission> GetMyScore(int UserId);
+        Task<int> GetMyRank(int UserId);
     }
 }

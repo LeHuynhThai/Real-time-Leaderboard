@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -95,6 +95,26 @@ namespace API.Controllers
                 Score = s.Score
             });
             return Ok(new { success = true, data = response });
+        }
+
+        [HttpGet("my-rank")]
+        public async Task<IActionResult> GetMyRank()
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value 
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
+            }
+
+            var rank = await _scoreSubmissionService.GetMyRank(userId);
+
+            return Ok(new
+            {
+                success = true,
+                data = new { rank }
+            });
         }
     }
 

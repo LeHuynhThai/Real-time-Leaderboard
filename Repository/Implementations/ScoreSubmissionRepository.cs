@@ -54,13 +54,14 @@ namespace Repository.Implementations
                 .Take(ranking)
                 .ToListAsync();
         }
-        public class LeaderboardEntryDto
+        
+        public async Task<int> GetUserRank(int score)
         {
-            public int UserId { get; set; }
-            public string UserName { get; set; } = string.Empty;
-            public int Score { get; set; }
-            public DateTime UpdatedAt { get; set; }
+            return await _context.ScoreSubmissions
+                .Select(s => s.Score)
+                .Where(s => s > score)
+                .Distinct()
+                .CountAsync();
         }
-
     }
 }

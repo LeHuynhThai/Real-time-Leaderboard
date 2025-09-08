@@ -46,3 +46,13 @@ export async function getLeaderboard(n) {
     throw new Error(error.message || 'Error fetching leaderboard')
   }
 }
+
+export async function getMyRank() {
+  try {
+    const response = await http('/api/ScoreSubmission/my-rank')
+    return response
+  } catch (error) {
+    console.error('Error fetching my rank:', error)
+    throw new Error(error.message || 'Error fetching my rank')
+  }
+}

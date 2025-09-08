@@ -52,9 +52,18 @@ namespace Service.Implementations
             // If score is lower than existing score, do nothing
             return existing;
         }
+
         public async Task<ScoreSubmission> GetMyScore(int UserId)
         {
             return await _scoreSubmissionRepository.GetScoreById(UserId);
+        }
+        
+        public async Task<int> GetMyRank(int UserId)
+        {
+            var my = await _scoreSubmissionRepository.GetScoreById(UserId);
+            var myScore = my?.Score ?? 0;
+            var higherDistinct = await _scoreSubmissionRepository.GetUserRank(myScore);
+            return higherDistinct + 1;
         }
     }
 }
