@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import './Header.css'
+
 
 export default function Header({ user, onLogout }) {
   const displayName = user?.userName || user?.username || 'Player'
@@ -14,7 +15,7 @@ export default function Header({ user, onLogout }) {
         <nav className="site-header__nav">
           <Link to="/home" className="nav__link">Home</Link>
           <Link to="/leaderboard" className="nav__link">Leaderboard</Link>
-          <Link to="/game" className="nav__link">Game</Link>
+          <Link to="/play" className="nav__link">Game</Link>
         </nav>
 
         <div className="site-header__user">

@@ -4,6 +4,7 @@ import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getMyScore } from '../services/scoreService.js'
 
 export default function Home() {  
   const navigate = useNavigate()
@@ -23,6 +24,12 @@ export default function Home() {
 
   const fetchLeaderboard = async () => {
     try {
+      // Fetch current user's score
+      const res = await getMyScore()
+      if (res?.success && res?.data) {
+        setUser(prev => ({ ...prev, bestScore: res.data.score }))
+      }
+      // If you later fetch leaderboard, setLeaderboard(...) here
     } catch (error) {
       console.error('Error fetching leaderboard:', error)
     } finally {
@@ -62,13 +69,6 @@ export default function Home() {
               <div className="stat-content">
                 <h3>Your Rank</h3>
                 <p className="stat-value">#{user?.rank || 'N/A'}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">🎮</div>
-              <div className="stat-content">
-                <h3>Games Played</h3>
-                <p className="stat-value">{user?.gamesPlayed || '0'}</p>
               </div>
             </div>
           </div>

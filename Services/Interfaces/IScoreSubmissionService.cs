@@ -11,5 +11,6 @@ namespace Service.Interfaces
     {
         Task<List<ScoreSubmission>> GetAllScoreSubmissions();
         Task<ScoreSubmission> SaveScore(int UserId, int score);
+        Task<ScoreSubmission> GetMyScore(int UserId);
     }
 }

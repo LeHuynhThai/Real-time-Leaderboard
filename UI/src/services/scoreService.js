@@ -24,3 +24,13 @@ export async function getAllScores() {
     throw new Error(error.message || 'Error fetching scores')
   }
 }
+
+export async function getMyScore() {
+  try {
+    const response = await http('/api/ScoreSubmission/me')
+    return response
+  } catch (error) {
+    console.error('Error fetching my score:', error)
+    throw new Error(error.message || 'Error fetching my score')
+  }
+}

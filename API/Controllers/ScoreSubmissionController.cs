@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Repository.Entities;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -26,7 +27,6 @@ namespace API.Controllers
             {
                 return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
             }
-
             try
             {
                 var result = await _scoreSubmissionService.SaveScore(userId, request.Score);
@@ -47,6 +47,27 @@ namespace API.Controllers
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyScore()
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
+            }
+
+            var result = await _scoreSubmissionService.GetMyScore(userId);
+            return Ok(new
+            {
+                success = true,
+                data = new
+                {
+                    userId = result.UserId,
+                    score = result.Score,
+                }
+            });
         }
 
         [HttpGet("all")]
