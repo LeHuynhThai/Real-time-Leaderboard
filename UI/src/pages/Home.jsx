@@ -4,7 +4,7 @@ import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMyScore } from '../services/scoreService.js'
+import { getMyScore, getAllScores } from '../services/scoreService.js'
 
 export default function Home() {  
   const navigate = useNavigate()
@@ -24,14 +24,17 @@ export default function Home() {
 
   const fetchLeaderboard = async () => {
     try {
-      // Fetch current user's score
       const res = await getMyScore()
       if (res?.success && res?.data) {
         setUser(prev => ({ ...prev, bestScore: res.data.score }))
       }
-      // If you later fetch leaderboard, setLeaderboard(...) here
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error)
+    } catch (e) {
+      // ignore error, continue to fetch leaderboard
+    }
+
+    try {
+      const lbRes = await getAllScores()
+      setLeaderboard(Array.isArray(lbRes?.data) ? lbRes.data : [])
     } finally {
       setLoading(false)
     }
@@ -96,12 +99,12 @@ export default function Home() {
             ) : (
               <div className="leaderboard-list">
                 {leaderboard.map((player, index) => (
-                  <div key={player.id} className={`leaderboard-item ${index < 3 ? 'top-three' : ''}`}>
+                  <div key={index} className={`leaderboard-item ${index < 3 ? 'top-three' : ''}`}>
                     <div className="rank">
                       {index < 3 ? ['🥇', '🥈', '🥉'][index] : `#${player.rank}`}
                     </div>
                     <div className="player-info">
-                      <span className="username">{player.username}</span>
+                      <span className="username">{player.userName}</span>
                     </div>
                     <div className="score">{player.score.toLocaleString()}</div>
                   </div>

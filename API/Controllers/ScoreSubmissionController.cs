@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -59,6 +59,20 @@ namespace API.Controllers
             }
 
             var result = await _scoreSubmissionService.GetMyScore(userId);
+            // If user has no score yet, return default score 0 instead of throwing
+            if (result == null)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        userId = userId,
+                        score = 0,
+                    }
+                });
+            }
+
             return Ok(new
             {
                 success = true,

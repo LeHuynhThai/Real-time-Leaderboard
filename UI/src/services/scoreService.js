@@ -34,3 +34,15 @@ export async function getMyScore() {
     throw new Error(error.message || 'Error fetching my score')
   }
 }
+
+// Fetch leaderboard with optional limit n (default to show more entries for full view)
+export async function getLeaderboard(n) {
+  try {
+    const query = typeof n === 'number' ? `?n=${n}` : ''
+    const response = await http(`/api/ScoreSubmission/all${query}`)
+    return response
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error)
+    throw new Error(error.message || 'Error fetching leaderboard')
+  }
+}

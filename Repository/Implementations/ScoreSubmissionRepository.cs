@@ -25,11 +25,6 @@ namespace Repository.Implementations
             return scoreSubmission;
         }
 
-        public async Task<List<ScoreSubmission>> GetAllScore()
-        {
-            return await _context.ScoreSubmissions.ToListAsync();
-        }
-
         public async Task<ScoreSubmission> GetUserById(int UserId)
         {
             return await _context.ScoreSubmissions.FindAsync(UserId);
@@ -59,5 +54,13 @@ namespace Repository.Implementations
                 .Take(ranking)
                 .ToListAsync();
         }
+        public class LeaderboardEntryDto
+        {
+            public int UserId { get; set; }
+            public string UserName { get; set; } = string.Empty;
+            public int Score { get; set; }
+            public DateTime UpdatedAt { get; set; }
+        }
+
     }
 }
