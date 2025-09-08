@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 
 <head>
     <title>T-Rex Game</title>
@@ -28,7 +28,7 @@
                     return;
                 }
                 const API_BASE_URL = 'https://localhost:7034';
-                const response = await fetch(`${API_BASE_URL}/api/ScoreSubmission/update-score`, {
+                const response = await fetch(`${API_BASE_URL}/api/ScoreSubmission/save-score`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -25,21 +25,10 @@ namespace Service.Implementations
             return await _scoreSubmissionRepository.GetAllScoreSubmissions();
         }
 
-        public async Task<ScoreSubmission> SubmitScore(int UserId, int score)
-        {
-            var user = await _userRepository.GetUserById(UserId);
-            var scoreSubmission = new ScoreSubmission
-            {
-                UserId = UserId,
-                Score = score
-            };
-            
-            return await _scoreSubmissionRepository.CreateScoreSubmission(scoreSubmission);
-        }
-
-        public async Task<ScoreSubmission> UpdateScore(int UserId, int score)
+        public async Task<ScoreSubmission> SaveScore(int UserId, int score)
         {
             var existing = await _scoreSubmissionRepository.GetUserById(UserId);
+            
             // If no existing score, create a new one
             if (existing == null)
             {
@@ -62,11 +51,6 @@ namespace Service.Implementations
             }
             // If score is lower than existing score, do nothing
             return existing;
-        }
-
-        public async Task<ScoreSubmission> GetScoreByUserId(int userId)
-        {
-            return await _scoreSubmissionRepository.GetScoreById(userId);
         }
     }
 }

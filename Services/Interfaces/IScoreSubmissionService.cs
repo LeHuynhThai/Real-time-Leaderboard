@@ -10,8 +10,6 @@ namespace Service.Interfaces
     public interface IScoreSubmissionService
     {
         Task<List<ScoreSubmission>> GetAllScoreSubmissions();
-        Task<ScoreSubmission> SubmitScore(int UserId, int score);
-        Task<ScoreSubmission> UpdateScore(int UserId, int score);
-        Task<ScoreSubmission> GetScoreByUserId(int userId);
+        Task<ScoreSubmission> SaveScore(int UserId, int score);
     }
 }
