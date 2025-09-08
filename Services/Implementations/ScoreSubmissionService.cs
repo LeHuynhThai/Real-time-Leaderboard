@@ -20,9 +20,9 @@ namespace Service.Implementations
             _userRepository = userRepository;
         }
 
-        public async Task<List<ScoreSubmission>> GetAllScoreSubmissions()
+        public async Task<List<ScoreSubmission>> GetLeaderboard(int ranking)
         {
-            return await _scoreSubmissionRepository.GetAllScoreSubmissions();
+            return await _scoreSubmissionRepository.GetLeaderboard(ranking);
         }
 
         public async Task<ScoreSubmission> SaveScore(int UserId, int score)
@@ -39,7 +39,7 @@ namespace Service.Implementations
                     Status = SubmissionStatus.Approved,
                     CreatedAt = DateTime.UtcNow
                 };
-                return await _scoreSubmissionRepository.CreateScoreSubmission(scoreSubmission);
+                return await _scoreSubmissionRepository.CreateScore(scoreSubmission);
             }
             // If score is higher than existing score, update the score
             if (score > existing.Score)

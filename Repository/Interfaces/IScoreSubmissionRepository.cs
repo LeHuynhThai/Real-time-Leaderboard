@@ -9,8 +9,8 @@ namespace Repository.Interfaces
 {
     public interface IScoreSubmissionRepository
     {
-        Task<ScoreSubmission> CreateScoreSubmission(ScoreSubmission scoreSubmission);
-        Task<List<ScoreSubmission>> GetAllScoreSubmissions();
+        Task<ScoreSubmission> CreateScore(ScoreSubmission scoreSubmission);
+        Task<List<ScoreSubmission>> GetLeaderboard(int ranking);
         Task<ScoreSubmission> GetUserById(int UserId);
         Task<ScoreSubmission> UpdateScore(ScoreSubmission scoreSubmission);
         Task<ScoreSubmission> GetScoreById(int UserId);

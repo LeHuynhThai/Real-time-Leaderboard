@@ -18,14 +18,14 @@ namespace Repository.Implementations
             _context = context;
         }
 
-        public async Task<ScoreSubmission> CreateScoreSubmission(ScoreSubmission scoreSubmission)
+        public async Task<ScoreSubmission> CreateScore(ScoreSubmission scoreSubmission)
         {
             _context.ScoreSubmissions.Add(scoreSubmission);
             await _context.SaveChangesAsync();
             return scoreSubmission;
         }
 
-        public async Task<List<ScoreSubmission>> GetAllScoreSubmissions()
+        public async Task<List<ScoreSubmission>> GetAllScore()
         {
             return await _context.ScoreSubmissions.ToListAsync();
         }
@@ -47,6 +47,17 @@ namespace Repository.Implementations
             return await _context.ScoreSubmissions
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
+        public async Task<List<ScoreSubmission>> GetLeaderboard (int ranking)
+        {
+            return await _context.ScoreSubmissions
+                .AsNoTracking()
+                .Include(s => s.User)
+                .OrderByDescending(s => s.Score)
+                .ThenBy(s => s.UpdatedAt) // nếu bằng điểm thì ai đạt điểm trước sẽ xếp trước
+                .Take(ranking)
+                .ToListAsync();
         }
     }
 }

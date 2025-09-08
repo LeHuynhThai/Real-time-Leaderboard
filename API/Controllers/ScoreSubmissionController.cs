@@ -71,21 +71,17 @@ namespace API.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllScoreSubmissions()
+        public async Task<IActionResult> GetLeaderboard(int n = 10)
         {
-            var results = await _scoreSubmissionService.GetAllScoreSubmissions();
-            var dto = results.Select(r => new {
-                id = r.Id,
-                userId = r.UserId,
-                userName = r.User?.UserName,
-                score = r.Score,
-                createdAt = r.CreatedAt,
-                status = r.Status.ToString()
+            var result = await _scoreSubmissionService.GetLeaderboard(n);
+            var response = result.Select((s, index) => new
+            {
+                Rank = index + 1,
+                UserName = s.User.UserName,
+                Score = s.Score
             });
-            return Ok(new { success = true, data = dto });
+            return Ok(new { success = true, data = response });
         }
-
-
     }
 
     public class SubmitScoreRequest
