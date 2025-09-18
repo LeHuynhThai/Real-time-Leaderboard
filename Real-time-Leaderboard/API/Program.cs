@@ -1,15 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Repository.Implementations;
 using Repository.Interfaces;
 using Service.Implementations;
 using Service.Interfaces;
-using System;
 using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.FileProviders;
-using System.IO;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp", policy =>    
+    options.AddPolicy("AllowReactApp", policy =>
     {
         policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
               .AllowAnyHeader()
@@ -49,8 +46,9 @@ builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { 
-        Title = "Leaderboard API", 
+    c.SwaggerDoc("v1", new()
+    {
+        Title = "Leaderboard API",
         Version = "v1",
         Description = "API for Real-time Leaderboard System"
     });
