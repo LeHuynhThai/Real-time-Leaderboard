@@ -12,9 +12,9 @@ namespace API.Controllers
     [Authorize]
     public class ScoreSubmissionController : ControllerBase
     {
-        private readonly IScoreSubmissionService _scoreSubmissionService;
+        private readonly IScoreService _scoreSubmissionService;
 
-        public ScoreSubmissionController(IScoreSubmissionService scoreSubmissionService)
+        public ScoreSubmissionController(IScoreService scoreSubmissionService)
         {
             _scoreSubmissionService = scoreSubmissionService;
         }
@@ -37,7 +37,7 @@ namespace API.Controllers
                     {
                         id = result.Id,
                         userId = result.UserId,
-                        score = result.Score,
+                        score = result.UserScore,
                         UpdatedAt = result.UpdatedAt,
                         status = result.Status.ToString()
                     }
@@ -79,7 +79,7 @@ namespace API.Controllers
                 data = new
                 {
                     userId = result.UserId,
-                    score = result.Score,
+                    score = result.UserScore,
                 }
             });
         }
@@ -92,7 +92,7 @@ namespace API.Controllers
             {
                 Rank = index + 1,
                 UserName = s.User.UserName,
-                Score = s.Score
+                Score = s.UserScore
             });
             return Ok(new { success = true, data = response });
         }

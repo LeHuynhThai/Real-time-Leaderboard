@@ -22,7 +22,7 @@ namespace Repository.Entities
 
         public UserRole Role { get; set; } = UserRole.User;
 
-        public virtual ScoreSubmission ScoreSubmission { get; set; }
+        public virtual Score Score { get; set; }
     }
 
     public enum UserRole

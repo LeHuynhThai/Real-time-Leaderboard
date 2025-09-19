@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Service.Interfaces
 {
-    public interface IScoreSubmissionService
+    public interface IScoreService
     {
-        Task<List<ScoreSubmission>> GetLeaderboard(int ranking);
-        Task<ScoreSubmission> SaveScore(int UserId, int score);
-        Task<ScoreSubmission> GetMyScore(int UserId);
+        Task<List<Score>> GetLeaderboard(int ranking);
+        Task<Score> SaveScore(int UserId, int score);
+        Task<Score> GetMyScore(int UserId);
         Task<int> GetMyRank(int UserId);
     }
 }

@@ -1,0 +1,62 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Repository.Entities;
+using Repository.Interfaces;
+
+namespace Repository.Implementations
+{
+    public class ScoreRepository : IScoreRepository
+    {
+        private readonly AppDbContext _context;
+
+        public ScoreRepository(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Score> CreateScore(Score scoreSubmission)
+        {
+            _context.Scores.Add(scoreSubmission);
+            await _context.SaveChangesAsync();
+            return scoreSubmission;
+        }
+
+        public async Task<Score> GetUserById(int UserId)
+        {
+            return await _context.Scores.FindAsync(UserId);
+        }
+
+        public async Task<Score> UpdateScore(Score scoreSubmission)
+        {
+            _context.Scores.Update(scoreSubmission);
+            await _context.SaveChangesAsync();
+            return scoreSubmission;
+        }
+
+        public async Task<Score> GetScoreById(int userId)
+        {
+            return await _context.Scores
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
+        public async Task<List<Score>> GetLeaderboard(int ranking)
+        {
+            return await _context.Scores
+                .AsNoTracking()
+                .Include(s => s.User)
+                .OrderByDescending(s => s.UserScore)
+                .ThenBy(s => s.UpdatedAt) // nếu bằng điểm thì ai đạt điểm trước sẽ xếp trước
+                .Take(ranking)
+                .ToListAsync();
+        }
+
+        public async Task<int> GetUserRank(int score)
+        {
+            return await _context.Scores
+                .Select(s => s.UserScore)
+                .Where(s => s > score)
+                .Distinct()
+                .CountAsync();
+        }
+    }
+}

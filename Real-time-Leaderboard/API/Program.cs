@@ -37,8 +37,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-builder.Services.AddScoped<IScoreSubmissionRepository, ScoreSubmissionRepository>();
-builder.Services.AddScoped<IScoreSubmissionService, ScoreSubmissionService>();
+builder.Services.AddScoped<IScoreRepository, ScoreRepository>();
+builder.Services.AddScoped<IScoreService, ScoreService>();
 
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
