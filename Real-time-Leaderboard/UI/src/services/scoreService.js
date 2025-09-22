@@ -2,7 +2,7 @@ import { http } from './http'
 
 export async function submitScore(score) {
   try {
-    const response = await http('/api/ScoreSubmission/submit-score', {
+    const response = await http('/api/Score/submit-score', {
       method: 'POST',
       body: JSON.stringify({
         Score: score
@@ -17,7 +17,7 @@ export async function submitScore(score) {
 
 export async function getAllScores() {
   try {
-    const response = await http('/api/ScoreSubmission/all')
+      const response = await http('/api/Score/all')
     return response
   } catch (error) {
     console.error('Error fetching scores:', error)
@@ -27,7 +27,7 @@ export async function getAllScores() {
 
 export async function getMyScore() {
   try {
-    const response = await http('/api/ScoreSubmission/me')
+      const response = await http('/api/Score/me')
     return response
   } catch (error) {
     console.error('Error fetching my score:', error)
@@ -39,7 +39,7 @@ export async function getMyScore() {
 export async function getLeaderboard(n) {
   try {
     const query = typeof n === 'number' ? `?n=${n}` : ''
-    const response = await http(`/api/ScoreSubmission/all${query}`)
+      const response = await http(`/api/Score/all${query}`)
     return response
   } catch (error) {
     console.error('Error fetching leaderboard:', error)
@@ -49,7 +49,7 @@ export async function getLeaderboard(n) {
 
 export async function getMyRank() {
   try {
-    const response = await http('/api/ScoreSubmission/my-rank')
+      const response = await http('/api/Score/my-rank')
     return response
   } catch (error) {
     console.error('Error fetching my rank:', error)

@@ -10,11 +10,11 @@ namespace API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ScoreSubmissionController : ControllerBase
+    public class ScoreController : ControllerBase
     {
         private readonly IScoreService _scoreSubmissionService;
 
-        public ScoreSubmissionController(IScoreService scoreSubmissionService)
+        public ScoreController(IScoreService scoreSubmissionService)
         {
             _scoreSubmissionService = scoreSubmissionService;
         }

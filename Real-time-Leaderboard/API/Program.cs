@@ -43,16 +43,6 @@ builder.Services.AddScoped<IScoreService, ScoreService>();
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new()
-    {
-        Title = "Leaderboard API",
-        Version = "v1",
-        Description = "API for Real-time Leaderboard System"
-    });
-});
 
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -78,15 +68,6 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Leaderboard API V1");
-        options.RoutePrefix = string.Empty;
-    });
-}
 
 app.UseCors("AllowReactApp");
 
