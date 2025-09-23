@@ -53,9 +53,7 @@ namespace Repository.Implementations
         public async Task<int> GetUserRank(int score)
         {
             return await _context.Scores
-                .Select(s => s.UserScore)
-                .Where(s => s > score)
-                .Distinct()
+                .Where(s => s.UserScore > score)
                 .CountAsync();
         }
     }
