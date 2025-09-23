@@ -12,6 +12,8 @@ namespace Repository.Entities
         [Key]
         public int Id { get; set; }
 
+        [Required]
+        [MaxLength(50)]
         public string UserName { get; set; }
 
         public string Email { get; set; }

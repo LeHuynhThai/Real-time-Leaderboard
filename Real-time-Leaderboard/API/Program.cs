@@ -8,6 +8,8 @@ using Service.Implementations;
 using Service.Interfaces;
 using System.Text;
 using System.Text.Json.Serialization;
+using StackExchange.Redis;
+using Repository.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +68,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Configure Authorization
 builder.Services.AddAuthorization();
 
+var redisSection = builder.Configuration.GetSection("Redis");
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisSection["ConnectionString"];
+    options.InstanceName = redisSection["InstanceName"];
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+    ConnectionMultiplexer.Connect(redisSection["ConnectionString"])
+);
+
+
+
 var app = builder.Build();
 
 
@@ -78,5 +93,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using(var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await UserSeed.SeedAsync(db);
+    await ScoreSeed.SeedAsync(db);
+}
 
 app.Run();
