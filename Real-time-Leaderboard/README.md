@@ -4,7 +4,7 @@
 2. score submission
 3. real-time leaderboard updates
 4. score history tracking
-5. Redis sorted sets will be used to manage and query the leaderboards efficiently
+5. SQL Server database will be used to manage and query the leaderboards efficiently
 
 Project Requirements
 You are to build an imaginary real-time leaderboard system that ranks users based on their scores in various games or activities. The system should meet the following requirements:
