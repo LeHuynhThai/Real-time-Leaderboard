@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
@@ -9,6 +9,8 @@ export default function Leaderboard() {
   const [user, setUser] = useState(null)
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
+  const [q, setQ] = useState('')
+  
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -23,8 +25,7 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      // Fetch full leaderboard (pass a large n)
-      const res = await getLeaderboard(1000)
+      const res = await getLeaderboard()
       if (res?.success && Array.isArray(res.data)) {
         setLeaderboard(res.data)
       } else {
@@ -37,6 +38,22 @@ export default function Leaderboard() {
       setLoading(false)
     }
   }
+
+const rankByUser = useMemo(() => {
+  const map = new Map()
+  leaderboard.forEach((p, i) => {
+    const key = (p.userName || '').toLowerCase()
+    const r = typeof p.rank === 'number' ? p.rank : (i + 1)
+    if (key) map.set(key, r)
+  })
+  return map
+}, [leaderboard])
+
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase()
+    if (!term) return leaderboard
+    return leaderboard.filter(x=> (x.userName || '').toLowerCase().includes(term))
+  }, [q, leaderboard])
 
   const handleLogout = () => {
     removeToken()
@@ -51,28 +68,48 @@ export default function Leaderboard() {
       <div className="leaderboard__wrap" style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
         <Header user={user} onLogout={handleLogout} />
 
+        <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+          <input
+            type="text"
+            placeholder="Tìm theo tên người chơi..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: '1px solid #ddd',
+              outline: 'none'
+            }}
+          />
+        </div>
+
         <section style={{ marginTop: 24 }}>
           <h2 style={{ marginBottom: 16 }}>Leaderboard</h2>
           {loading ? (
             <div className="loading">Loading leaderboard...</div>
           ) : (
             <div className="leaderboard-list">
-              {leaderboard.length === 0 ? (
-                <div className="empty">No records</div>
-              ) : (
-                leaderboard.map((player, index) => (
-                  <div key={index} className={`leaderboard-item ${index < 3 ? 'top-three' : ''}`}>
+            {filtered.length === 0 ? ( 
+              <div className="empty">No records</div>
+            ) : (
+              filtered.map((player, index) => {
+                const key = (player.userName || '').toLowerCase()
+                const r = typeof player.rank === 'number' ? player.rank : (rankByUser.get(key) ?? (index + 1))
+                return (
+                  <div key={`${player.userName}-${index}`} className={`leaderboard-item ${r <= 3 ? 'top-three' : ''}`}>
                     <div className="rank">
-                      {index < 3 ? ['🥇', '🥈', '🥉'][index] : `#${player.rank}`}
+                      {r <= 3 ? ['🥇', '🥈', '🥉'][r - 1] : `#${r}`}
                     </div>
                     <div className="player-info">
                       <span className="username">{player.userName}</span>
                     </div>
                     <div className="score">{player.score?.toLocaleString?.() ?? player.score}</div>
                   </div>
-                ))
-              )}
-            </div>
+                )
+              })
+            )}
+          </div>
           )}
         </section>
       </div>

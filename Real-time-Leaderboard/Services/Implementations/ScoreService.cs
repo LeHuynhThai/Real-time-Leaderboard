@@ -15,9 +15,9 @@ namespace Service.Implementations
             _userRepository = userRepository;
         }
 
-        public async Task<List<Score>> GetLeaderboard(int ranking)
+        public async Task<List<Score>> GetLeaderboard()
         {
-            return await _scoreRepository.GetLeaderboard(ranking);
+            return await _scoreRepository.GetLeaderboard();
         }
 
         public async Task<Score> SaveScore(int UserId, int score)
@@ -57,8 +57,9 @@ namespace Service.Implementations
         {
             var my = await _scoreRepository.GetScoreById(UserId);
             var myScore = my?.UserScore ?? 0;
-            var higherDistinct = await _scoreRepository.GetUserRank(myScore);
-            return higherDistinct + 1;
+            var myupdateAt = my?.UpdatedAt ?? DateTime.MinValue;
+            var rank = await _scoreRepository.GetUserRank(myScore, myupdateAt);
+            return rank + 1;
         }
     }
 }

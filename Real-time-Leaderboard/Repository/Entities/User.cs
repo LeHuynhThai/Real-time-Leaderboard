@@ -13,7 +13,7 @@ namespace Repository.Entities
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(50)]
+        [MaxLength(10, ErrorMessage = "UserName không được vượt quá 10 ký tự")]
         public string UserName { get; set; }
 
         public string Email { get; set; }

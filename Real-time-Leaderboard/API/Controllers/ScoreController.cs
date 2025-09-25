@@ -12,11 +12,11 @@ namespace API.Controllers
     [Authorize]
     public class ScoreController : ControllerBase
     {
-        private readonly IScoreService _scoreSubmissionService;
+        private readonly IScoreService _scoreService;
 
-        public ScoreController(IScoreService scoreSubmissionService)
+        public ScoreController(IScoreService scoreService)
         {
-            _scoreSubmissionService = scoreSubmissionService;
+            _scoreService = scoreService;
         }
 
         [HttpPost("save-score")]
@@ -29,7 +29,7 @@ namespace API.Controllers
             }
             try
             {
-                var result = await _scoreSubmissionService.SaveScore(userId, request.Score);
+                var result = await _scoreService.SaveScore(userId, request.Score);
                 return Ok(new
                 {
                     success = true,
@@ -58,7 +58,7 @@ namespace API.Controllers
                 return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
             }
 
-            var result = await _scoreSubmissionService.GetMyScore(userId);
+            var result = await _scoreService.GetMyScore(userId);
             // If user has no score yet, return default score 0 instead of throwing
             if (result == null)
             {
@@ -85,10 +85,11 @@ namespace API.Controllers
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetLeaderboard(int n = 10)
+        public async Task<IActionResult> GetLeaderboard(int n = 0)
         {
-            var result = await _scoreSubmissionService.GetLeaderboard(n);
-            var response = result.Select((s, index) => new
+            var result = await _scoreService.GetLeaderboard();
+            var data = n > 0 ? result.Take(n) : result;
+            var response = data.Select((s, index) => new
             {
                 Rank = index + 1,
                 UserName = s.User.UserName,
@@ -108,7 +109,7 @@ namespace API.Controllers
                 return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
             }
 
-            var rank = await _scoreSubmissionService.GetMyRank(userId);
+            var rank = await _scoreService.GetMyRank(userId);
 
             return Ok(new
             {

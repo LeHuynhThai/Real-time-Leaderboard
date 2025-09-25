@@ -39,21 +39,21 @@ namespace Repository.Implementations
                 .FirstOrDefaultAsync(s => s.UserId == userId);
         }
 
-        public async Task<List<Score>> GetLeaderboard(int ranking)
+        public async Task<List<Score>> GetLeaderboard()
         {
             return await _context.Scores
                 .AsNoTracking()
                 .Include(s => s.User)
                 .OrderByDescending(s => s.UserScore)
-                .ThenBy(s => s.UpdatedAt) // nếu bằng điểm thì ai đạt điểm trước sẽ xếp trước
-                .Take(ranking)
+                .ThenBy(s => s.UpdatedAt)
                 .ToListAsync();
         }
 
-        public async Task<int> GetUserRank(int score)
+        public async Task<int> GetUserRank(int score, DateTime updatedAt)
         {
+
             return await _context.Scores
-                .Where(s => s.UserScore > score)
+                .Where(s => s.UserScore > score || (s.UserScore == score && s.UpdatedAt < updatedAt))
                 .CountAsync();
         }
     }
