@@ -131,3 +131,32 @@ export const clearSearchHistory = () => {
     console.error('Error clearing search history:', error)
   }
 }
+
+
+export const getUserById = async (userId) => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        throw new Error('No authentication token found')
+      }
+  
+      const response = await fetch(`${API_BASE_URL}/user/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+  
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Failed to get user')
+      }
+  
+      const result = await response.json()
+      return result
+    } catch (error) {
+      console.error('Error getting user by ID:', error)
+      throw error
+    }
+  }

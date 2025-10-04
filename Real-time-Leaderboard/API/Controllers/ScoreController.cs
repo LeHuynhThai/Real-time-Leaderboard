@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Repository.Entities;
 using Service.Interfaces;
 using System.Security.Claims;
 namespace API.Controllers
@@ -22,13 +19,9 @@ namespace API.Controllers
         [HttpPost("save-score")]
         public async Task<IActionResult> UpdateScore([FromBody] SubmitScoreRequest request)
         {
-            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
-            {
-                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
-            }
             try
             {
+                var userId = GetCurrentUserId();
                 var result = await _scoreService.SaveScore(userId, request.Score);
                 return Ok(new
                 {
@@ -52,12 +45,7 @@ namespace API.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetMyScore()
         {
-            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
-            {
-                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
-            }
-
+            var userId = GetCurrentUserId();
             var result = await _scoreService.GetMyScore(userId);
             // If user has no score yet, return default score 0 instead of throwing
             if (result == null)
@@ -101,21 +89,23 @@ namespace API.Controllers
         [HttpGet("my-rank")]
         public async Task<IActionResult> GetMyRank()
         {
-            var userIdClaim = User.FindFirst("userId")?.Value 
-                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
-            {
-                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
-            }
-
+            var userId = GetCurrentUserId();
             var rank = await _scoreService.GetMyRank(userId);
-
             return Ok(new
             {
                 success = true,
                 data = new { rank }
             });
+        }
+        
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                throw new UnauthorizedAccessException("Invalid or missing user ID in token");
+            }
+            return userId;
         }
     }
 

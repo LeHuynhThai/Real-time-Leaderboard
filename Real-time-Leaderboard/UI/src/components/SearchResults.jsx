@@ -1,7 +1,19 @@
 import React from 'react'
 import './SearchResults.css'
+import { sendFriendRequest } from '../services/friendService.js'
+import { toast } from 'react-toastify'
 
 export default function SearchResults({ results, loading = false, query = '' }) {
+    const handleAddFriend = async (userId, event) => {
+        event.stopPropagation()
+        try {
+          await sendFriendRequest(userId)
+          toast.success('Friend request sent!')
+        } catch (error) {
+          console.error('Error details:', error)
+          toast.error(error.message || 'Cannot send friend request')
+        }
+      }
   if (loading) {
     return (
       <div className="loading-state">
@@ -53,13 +65,12 @@ export default function SearchResults({ results, loading = false, query = '' }) 
       <div className="results-list">
         {results.map((user, index) => (
           <div
-            key={user.userId}
+            key={user.Id || user.id || index}
             className="user-card"
             onClick={() => {
               console.log('Clicked user:', user)
             }}
           >
-            {/* Avatar */}
             <div 
               className="user-avatar"
               style={{
@@ -69,14 +80,22 @@ export default function SearchResults({ results, loading = false, query = '' }) 
               {!user.avatar && <span style={{ fontSize: '32px' }}>👤</span>}
             </div>
 
-            {/* User Info */}
             <div className="user-info">
               <div className="user-name">
-                {user.userName}
-                <span className={`user-role ${String(user.role).toLowerCase()}`}>
-                  {user.role}
+                {user.userName || user.UserName}
+                <span className={`user-role ${String(user.role || user.Role).toLowerCase()}`}>
+                  {user.role || user.Role}
                 </span>
               </div>
+            </div>
+
+            <div className="user-actions">
+              <button 
+                className="btn-add-friend"
+                onClick={(e) => handleAddFriend(user.Id || user.id, e)}
+              >
+                👥 Add Friend
+              </button>
             </div>
           </div>
         ))}

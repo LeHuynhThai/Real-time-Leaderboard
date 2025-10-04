@@ -4,7 +4,7 @@ import Header from '../components/Header.jsx'
 import SearchBar from '../components/SearchBar.jsx'
 import SearchResults from '../components/SearchResults.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
-import './SearchPage.css'
+import '../styles/SearchPage.css'
 
 export default function SearchPage() {
   const navigate = useNavigate()
@@ -66,10 +66,6 @@ export default function SearchPage() {
             <h1 className="hero-title">
               Search Users
             </h1>
-            <p className="hero-subtitle">
-              Find users by username or email
-            </p>
-            
             {/* Search Bar */}
             <div className="search-bar-container">
               <div className="search-bar-wrapper">

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
 using System.Security.Claims;
@@ -31,7 +30,7 @@ namespace API.Controllers
                     PasswordHash = request.Password
                 };
                 var result = await _userService.Register(user);
-                return Ok(new { success = true , data = result });
+                return Ok(new { success = true, data = result });
             }
             catch (Exception ex)
             {
@@ -45,14 +44,17 @@ namespace API.Controllers
             try
             {
                 var user = await _userService.Login(request.Username, request.Password);
-                
+
                 // Generate JWT token
                 var token = _jwtTokenService.GenerateToken(user);
-                
-                return Ok(new { 
-                    success = true, 
-                    data = new {
-                        user = new {
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        user = new
+                        {
                             userId = user.Id,
                             userName = user.UserName,
                             email = user.Email,
@@ -78,11 +80,7 @@ namespace API.Controllers
         [HttpPost("update-avatar")]
         public async Task<IActionResult> UpdateAvatar(IFormFile avatar)
         {
-            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
-            {
-                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
-            }
+            var userId = GetCurrentUserId();
             try
             {
                 if (avatar == null || avatar.Length == 0)
@@ -93,7 +91,7 @@ namespace API.Controllers
                 {
                     return BadRequest(new { success = false, message = "File size too large. Maximum size is 1MB" });
                 }
-                
+
                 var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
                 if (!allowedTypes.Contains(avatar.ContentType))
                 {
@@ -108,10 +106,14 @@ namespace API.Controllers
                 var dataUrl = $"data:{avatar.ContentType};base64,{base64String}";
 
                 var user = await _userService.UpdateAvatar(userId, dataUrl);
-                return Ok(new { success = true, data = new 
+                return Ok(new
+                {
+                    success = true,
+                    data = new
                     {
                         avatar = user.Avatar
-                    } });
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -125,12 +127,33 @@ namespace API.Controllers
             try
             {
                 var users = await _userService.SearchUsers(query, limit);
-                return Ok(new { success = true, data = users });
+                
+                // Transform users to ensure proper JSON serialization
+                var userResults = users.Select(u => new
+                {
+                    Id = u.Id,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    Avatar = u.Avatar,
+                    Role = u.Role.ToString(),
+                    CreatedAt = u.CreatedAt
+                }).ToList();
+                
+                return Ok(new { success = true, data = userResults });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+        }
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                throw new UnauthorizedAccessException("Invalid or missing user ID in token");
+            }
+            return userId;
         }
     }
 

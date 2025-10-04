@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using API.SignalR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository;
 using Repository.Implementations;
 using Repository.Interfaces;
+using Repository.Seed;
 using Service.Implementations;
 using Service.Interfaces;
 using System.Text;
 using System.Text.Json.Serialization;
-using Repository.Seed;
-using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +41,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddScoped<IScoreRepository, ScoreRepository>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
+
+builder.Services.AddScoped<IFriendRepository, FriendRepository>();
+builder.Services.AddScoped<IFriendService, FriendService>();
 
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
@@ -83,7 +86,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");
 
-using(var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await UserSeed.SeedAsync(db);

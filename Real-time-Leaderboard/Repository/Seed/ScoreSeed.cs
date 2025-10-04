@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Entities;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Repository.Seed
 {

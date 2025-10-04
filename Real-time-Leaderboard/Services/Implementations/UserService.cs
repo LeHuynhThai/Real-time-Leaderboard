@@ -1,12 +1,6 @@
-﻿using BCrypt.Net;
-using Repository.Entities;
+﻿using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Service.Implementations
 {
@@ -42,7 +36,7 @@ namespace Service.Implementations
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             }
-            
+
             return await _userRepository.AddUser(user);
         }
 
@@ -80,7 +74,7 @@ namespace Service.Implementations
             {
                 throw new ArgumentException("Search query must be at least 2 characters", nameof(query));
             }
-            
+
             try
             {
                 return await _userRepository.SearchUsers(query, limit);

@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Repository.Entities;
 using Repository.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository.Implementations
 {
@@ -20,7 +15,7 @@ namespace Repository.Implementations
 
         public async Task<User> GetUserById(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<User> AddUser(User user)
@@ -44,8 +39,14 @@ namespace Repository.Implementations
 
         public async Task<List<User>> SearchUsers(string query, int limit = 10)
         {
-            return await _context.Users
-                .Where(u => u.UserName.Contains(query))
+            var queryable = _context.Users.AsQueryable();
+            
+            if (!string.IsNullOrEmpty(query))
+            {
+                queryable = queryable.Where(u => u.UserName.Contains(query));
+            }
+            
+            return await queryable
                 .OrderBy(u => u.UserName)
                 .Take(limit)
                 .ToListAsync();
