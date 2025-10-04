@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Repository.Seed;
 using API.SignalR;
-using Service.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

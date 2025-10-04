@@ -16,6 +16,7 @@ export default function Header({ user, onLogout }) {
           <Link to="/home" className="nav__link">Home</Link>
           <Link to="/leaderboard" className="nav__link">Leaderboard</Link>
           <Link to="/play" className="nav__link">Game</Link>
+          <Link to="/search" className="nav__link">Search</Link>
         </nav>
 
         <div className="site-header__user">

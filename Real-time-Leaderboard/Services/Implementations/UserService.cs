@@ -62,5 +62,33 @@ namespace Service.Implementations
             user.Avatar = avatar;
             return await _userRepository.UpdateUser(user);
         }
+
+        public async Task<List<User>> SearchUsers(string query, int limit = 10)
+        {
+            // validate query and limit
+            if (string.IsNullOrEmpty(query))
+            {
+                throw new ArgumentNullException("search query is required", nameof(query));
+            }
+            if (limit <= 0 || limit > 50)
+            {
+                throw new ArgumentException("Limit must be greater than 0 and less than 50", nameof(limit));
+            }
+
+            query = query.Trim();
+            if (query.Length < 2)
+            {
+                throw new ArgumentException("Search query must be at least 2 characters", nameof(query));
+            }
+            
+            try
+            {
+                return await _userRepository.SearchUsers(query, limit);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to search users", ex);
+            }
+        }
     }
 }

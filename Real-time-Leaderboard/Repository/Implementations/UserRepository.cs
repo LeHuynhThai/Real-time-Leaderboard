@@ -41,5 +41,14 @@ namespace Repository.Implementations
             await _context.SaveChangesAsync();
             return user;
         }
+
+        public async Task<List<User>> SearchUsers(string query, int limit = 10)
+        {
+            return await _context.Users
+                .Where(u => u.UserName.Contains(query))
+                .OrderBy(u => u.UserName)
+                .Take(limit)
+                .ToListAsync();
+        }
     }
 }

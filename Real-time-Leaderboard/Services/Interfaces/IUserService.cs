@@ -13,5 +13,6 @@ namespace Service.Interfaces
         Task<User> Login(string username, string password);
         bool VerifyPassword(string password, string hashedPassword);
         Task<User> UpdateAvatar(int userId, string avatar);
+        Task<List<User>> SearchUsers(string query, int limit = 10);
     }
 }

@@ -6,6 +6,7 @@ import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import Profile from './pages/Profile'
 import 'react-toastify/dist/ReactToastify.css'
+import SearchPage from './pages/SearchPage.jsx'
 
 function Game() {
   return (
@@ -32,6 +33,7 @@ function App() {
         <Route path="/play" element={<Game />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<SearchPage />} />
       </Routes>
       <ToastContainer
         position="top-right"

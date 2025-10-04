@@ -118,6 +118,20 @@ namespace API.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string query, [FromQuery] int limit = 10)
+        {
+            try
+            {
+                var users = await _userService.SearchUsers(query, limit);
+                return Ok(new { success = true, data = users });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 
     public class RegisterRequest
