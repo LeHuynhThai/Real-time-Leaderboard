@@ -12,5 +12,6 @@ namespace Repository.Interfaces
         Task<User> GetUserById(int id);
         Task<User> AddUser(User user);
         Task<User> GetUserByUsername(string username);
+        Task<User> UpdateUser(User user);
     }
 }

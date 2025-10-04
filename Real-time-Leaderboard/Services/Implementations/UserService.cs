@@ -51,5 +51,16 @@ namespace Service.Implementations
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
+
+        public async Task<User> UpdateAvatar(int userId, string avatar)
+        {
+            var user = await _userRepository.GetUserById(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
+            user.Avatar = avatar;
+            return await _userRepository.UpdateUser(user);
+        }
     }
 }

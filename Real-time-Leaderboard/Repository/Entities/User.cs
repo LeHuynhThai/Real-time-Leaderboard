@@ -24,6 +24,8 @@ namespace Repository.Entities
 
         public UserRole Role { get; set; } = UserRole.User;
 
+        public string? Avatar { get; set; }
+
         public virtual Score Score { get; set; }
     }
 

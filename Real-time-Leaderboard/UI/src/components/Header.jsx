@@ -20,8 +20,12 @@ export default function Header({ user, onLogout }) {
 
         <div className="site-header__user">
           <Link to="/profile" className="user__profile" aria-label="Go to your profile">
-            <div className="user__avatar" aria-hidden="true">
-              {/* Future: <img src={user?.avatarUrl} alt="Avatar" /> */}
+            <div className="user__avatar" aria-hidden="true" style={{
+              backgroundImage: user?.avatarData ? `url(${user.avatarData})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}>
+              {!user?.avatarData && '👤'}
             </div>
             <span className="user__name">{displayName}</span>
           </Link>

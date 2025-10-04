@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -32,7 +33,7 @@ namespace API.Controllers
                 var result = await _userService.Register(user);
                 return Ok(new { success = true , data = result });
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
@@ -55,13 +56,14 @@ namespace API.Controllers
                             userId = user.Id,
                             userName = user.UserName,
                             email = user.Email,
+                            avatar = user.Avatar,
                             role = user.Role.ToString()
                         },
                         token = token
                     }
                 });
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
@@ -71,6 +73,50 @@ namespace API.Controllers
         public async Task<IActionResult> Logout()
         {
             return Ok(new { message = "Logged out successfully" });
+        }
+
+        [HttpPost("update-avatar")]
+        public async Task<IActionResult> UpdateAvatar(IFormFile avatar)
+        {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
+            {
+                return Unauthorized(new { success = false, message = "Invalid or missing user ID in token" });
+            }
+            try
+            {
+                if (avatar == null || avatar.Length == 0)
+                {
+                    return BadRequest(new { success = false, message = "No file uploaded" });
+                }
+                if (avatar.Length > 1024 * 1024)
+                {
+                    return BadRequest(new { success = false, message = "File size too large. Maximum size is 1MB" });
+                }
+                
+                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+                if (!allowedTypes.Contains(avatar.ContentType))
+                {
+                    return BadRequest(new { success = false, message = "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed" });
+                }
+
+                // convert to base64
+                using var memoryStream = new MemoryStream();
+                await avatar.CopyToAsync(memoryStream);
+                var imageBytes = memoryStream.ToArray();
+                var base64String = Convert.ToBase64String(imageBytes);
+                var dataUrl = $"data:{avatar.ContentType};base64,{base64String}";
+
+                var user = await _userService.UpdateAvatar(userId, dataUrl);
+                return Ok(new { success = true, data = new 
+                    {
+                        avatar = user.Avatar
+                    } });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 

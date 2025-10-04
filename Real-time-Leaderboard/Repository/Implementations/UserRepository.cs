@@ -34,5 +34,12 @@ namespace Repository.Implementations
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
+
+        public async Task<User> UpdateUser(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
     }
 }
