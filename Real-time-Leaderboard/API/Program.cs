@@ -9,6 +9,8 @@ using Service.Interfaces;
 using System.Text;
 using System.Text.Json.Serialization;
 using Repository.Seed;
+using API.SignalR;
+using Service.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +46,9 @@ builder.Services.AddScoped<IScoreService, ScoreService>();
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 
+// Add SignalR
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -79,6 +84,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<LeaderboardHub>("/hubs/leaderboard");
 
 using(var scope = app.Services.CreateScope())
 {

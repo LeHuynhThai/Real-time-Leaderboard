@@ -5,7 +5,8 @@ import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../ser
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMyScore, getLeaderboard, getMyRank } from '../services/scoreService.js'
-
+import { startLeaderboardConnection, stopLeaderboardConnection, getConnection } from '../services/signalr.js'
+import { toast } from 'react-toastify'
 export default function Home() {  
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
@@ -21,6 +22,43 @@ export default function Home() {
       navigate('/sign-in')
     }
   }, [navigate])
+
+  useEffect(() => {
+    const setupSignalR = async () => {
+      try {
+        await startLeaderboardConnection()
+
+        const conn = getConnection()
+
+        conn.on('LeaderboardUpdate', async (data) => {
+          console.log('Real time update received in Home', data)
+          
+          // show toast notification
+          toast.success(`${data.username} has scored ${data.score}!`, {
+            position: 'top-right',
+            autoClose: 3000,
+          })
+
+          // fetch leaderboard
+          await fetchLeaderboard()
+
+          // update user rank and best score
+          setUser(prev => ({ ...prev, rank: data.rank, bestScore: data.score }))
+        })
+      } catch (error) {
+        console.error('SignalR connection failed in Home:', error)
+      }
+    }
+    setupSignalR()
+
+    return () => {
+      const conn = getConnection()
+      if (conn) {
+        conn.off('LeaderboardUpdate')
+      }
+      stopLeaderboardConnection()
+    }
+  }, [])
 
   const fetchLeaderboard = async () => {
     try {

@@ -1,8 +1,10 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import Home from './pages/Home'
 import Leaderboard from './pages/Leaderboard'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
+import 'react-toastify/dist/ReactToastify.css'
 
 function Game() {
   return (
@@ -29,6 +31,17 @@ function App() {
         <Route path="/play" element={<Game />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </BrowserRouter>
   );
 }

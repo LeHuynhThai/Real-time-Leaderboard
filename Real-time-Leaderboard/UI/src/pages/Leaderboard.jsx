@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { getLeaderboard } from '../services/scoreService.js'
+import { startLeaderboardConnection, stopLeaderboardConnection, getConnection } from '../services/signalr.js'
+import { toast } from 'react-toastify'
 
 export default function Leaderboard() {
   const navigate = useNavigate()
@@ -10,7 +12,6 @@ export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([])
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
-  
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -20,8 +21,40 @@ export default function Leaderboard() {
     const currentUser = getCurrentUser()
     setUser(currentUser)
     fetchLeaderboard()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate])
+
+  useEffect(() => {
+    const setupSignalR = async () => {
+      try {
+        await startLeaderboardConnection()
+
+        const conn = getConnection()
+
+        conn.on('LeaderboardUpdate', async (data) => {
+          // show toast notification
+          toast.info(`${data.username} has scored ${data.score}!`, {
+            position: 'top-right',
+            autoClose: 3000,
+          })
+
+          // fetch leaderboard
+          await fetchLeaderboard()
+        })
+      } catch (error) {
+        console.error('SignalR connection failed in Leaderboard:', error)
+      }
+    }
+    setupSignalR()
+
+    return () => {
+      const conn = getConnection()
+      if (conn) {
+        conn.off('LeaderboardUpdate')
+      }
+      stopLeaderboardConnection()
+    }
+  }, [])
+
 
   const fetchLeaderboard = async () => {
     try {
@@ -31,8 +64,8 @@ export default function Leaderboard() {
       } else {
         setLeaderboard([])
       }
-    } catch (err) {
-      console.error('Error loading leaderboard:', err)
+    } catch (e) {
+      console.error('Error loading leaderboard:', e)
       setLeaderboard([])
     } finally {
       setLoading(false)
