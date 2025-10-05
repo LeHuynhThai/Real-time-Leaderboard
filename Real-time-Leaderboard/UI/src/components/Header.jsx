@@ -38,6 +38,7 @@ export default function Header({ user, onLogout }) {
           <Link to="/leaderboard" className="nav__link">Leaderboard</Link>
           <Link to="/play" className="nav__link">Game</Link>
           <Link to="/search" className="nav__link">Search</Link>
+          <Link to="/chat" className="nav__link">Chat</Link>
           <Link to="/friends" className="nav__link">
             Friends
             {pendingRequests > 0 && (

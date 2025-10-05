@@ -9,6 +9,7 @@ namespace Repository
         public DbSet<User> Users { get; set; }
         public DbSet<Score> Scores { get; set; }
         public DbSet<Friend> Friends { get; set; }
+        public DbSet<Message> Messages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
@@ -27,7 +28,20 @@ namespace Repository
                 .HasForeignKey(f => f.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany()
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Receiver)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             base.OnModelCreating(modelBuilder);
         }
     }
 }
+

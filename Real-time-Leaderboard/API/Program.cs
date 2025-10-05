@@ -45,6 +45,10 @@ builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<IFriendRepository, FriendRepository>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 
+// Messages
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 
