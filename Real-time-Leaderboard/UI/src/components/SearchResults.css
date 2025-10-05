@@ -171,22 +171,6 @@
   gap: 12px;
 }
 
-.user-role {
-  padding: 4px 12px;
-  color: white;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-  text-transform: uppercase;
-}
-
-.user-role.admin {
-  background-color: #dc3545;
-}
-
-.user-role.user {
-  background-color: #28a745;
-}
 
 
 

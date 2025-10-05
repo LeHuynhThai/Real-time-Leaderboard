@@ -29,8 +29,8 @@ export default function Profile() {
     setUser(currentUser)
     
     // Set avatar preview if user has avatar
-    if (currentUser?.avatarData) {
-      setAvatarPreview(currentUser.avatarData)
+    if (currentUser?.avatar) {
+      setAvatarPreview(currentUser.avatar)
     }
     
     fetchUserStats()
@@ -87,7 +87,7 @@ export default function Profile() {
       
       // Update user data in localStorage
       const currentUser = getCurrentUser()
-      const updatedUser = { ...currentUser, avatarData: result.data.avatar }
+      const updatedUser = { ...currentUser, avatar: result.data.avatar }
       localStorage.setItem('user', JSON.stringify(updatedUser))
       setUser(updatedUser)
       
@@ -102,7 +102,7 @@ export default function Profile() {
 
   const handleCancelAvatar = () => {
     setAvatar(null)
-    setAvatarPreview(user?.avatarData || null)
+    setAvatarPreview(user?.avatar || null)
   }
 
   const handleLogout = () => {

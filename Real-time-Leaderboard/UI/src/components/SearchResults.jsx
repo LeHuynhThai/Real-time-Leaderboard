@@ -83,9 +83,6 @@ export default function SearchResults({ results, loading = false, query = '' }) 
             <div className="user-info">
               <div className="user-name">
                 {user.userName || user.UserName}
-                <span className={`user-role ${String(user.role || user.Role).toLowerCase()}`}>
-                  {user.role || user.Role}
-                </span>
               </div>
             </div>
 

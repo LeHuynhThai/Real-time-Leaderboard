@@ -76,5 +76,15 @@ namespace Repository.Implementations
                            f.Status == FriendStatus.Accepted)
                 .ToListAsync();
         }
+
+        public async Task<List<Friend>> GetFriendRequests(int userId)
+        {
+            return await _context.Friends
+                .Include(f => f.Sender)
+                .Include(f => f.Receiver)
+                .Where(f => f.ReceiverId == userId && f.Status == FriendStatus.Pending)
+                .OrderByDescending(f => f.CreatedAt)
+                .ToListAsync();
+        }
     }
 }

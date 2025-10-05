@@ -90,6 +90,21 @@ namespace API.Controllers
             }
         }
 
+        [HttpGet("requests")]
+        public async Task<IActionResult> GetFriendRequests()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var requests = await _friendService.GetFriendRequests(userId);
+                return Ok(new { success = true, data = requests });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -140,3 +140,31 @@ export const getFriendsList = async () => {
     throw error
   }
 }
+
+export const getFriendRequests = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/friend/requests`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.message || 'Failed to get friend requests')
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.error('Error getting friend requests:', error)
+    throw error
+  }
+}

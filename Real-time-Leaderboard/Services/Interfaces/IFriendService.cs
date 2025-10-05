@@ -9,5 +9,6 @@ namespace Service.Interfaces
         Task<Friend> RejectFriendRequest(int friendId);
         Task<bool> RemoveFriend(int friendId);
         Task<List<Friend>> GetFriendsList(int userId);
+        Task<List<Friend>> GetFriendRequests(int userId);
     }
 }

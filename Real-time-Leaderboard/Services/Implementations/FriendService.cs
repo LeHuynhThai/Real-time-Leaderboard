@@ -90,5 +90,10 @@ namespace Service.Implementations
         {
             return await _friendRepository.GetFriendsList(userId);
         }
+
+        public async Task<List<Friend>> GetFriendRequests(int userId)
+        {
+            return await _friendRepository.GetFriendRequests(userId);
+        }
     }
 }

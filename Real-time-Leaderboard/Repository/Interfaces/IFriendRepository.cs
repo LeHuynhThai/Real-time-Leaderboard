@@ -10,5 +10,6 @@ namespace Repository.Interfaces
         Task<Friend> GetFriendById(int senderId, int receiverId);
         Task<bool> DeleteFriend(int id);
         Task<List<Friend>> GetFriendsList(int userId);
+        Task<List<Friend>> GetFriendRequests(int userId);
     }
 }
