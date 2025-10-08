@@ -30,3 +30,33 @@ export async function stopLeaderboardConnection() {
     await connection.stop()
   }
 }
+
+let messageConnection;
+
+export function getMessageConnection() {
+  return messageConnection;
+}
+
+export async function startMessageConnection() {
+  if (messageConnection?.state === 'Connected') return messageConnection;
+
+  messageConnection = new signalR.HubConnectionBuilder()
+      .withUrl(`${BASE_URL}/hubs/message`, {
+          accessTokenFactory: () => getToken() || ''
+      })
+      .withAutomaticReconnect()
+      .build();
+
+  messageConnection.on("ReceiveMessage", (senderId, message) => {
+      console.log(`Message from ${senderId}: ${message}`);
+  });
+
+  await messageConnection.start();
+  return messageConnection;
+}
+
+export async function stopMessageConnection() {
+  if (messageConnection && (messageConnection.state === 'Connected' || messageConnection.state === 'Connecting')) {
+      await messageConnection.stop();
+  }
+}

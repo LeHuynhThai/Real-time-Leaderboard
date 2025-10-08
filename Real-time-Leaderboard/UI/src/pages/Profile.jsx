@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { getMyScore, getMyRank } from '../services/scoreService.js'
+import { startLeaderboardConnection, stopLeaderboardConnection, getConnection } from '../services/signalr.js'
 import { toast } from 'react-toastify'
 import { uploadAvatar } from '../services/avatarService.js'
 
@@ -35,6 +36,43 @@ export default function Profile() {
     
     fetchUserStats()
   }, [navigate])
+
+  useEffect(() => {
+    const setupSignalR = async () => {
+      try {
+        await startLeaderboardConnection()
+        const conn = getConnection()
+        
+        conn.on('LeaderboardUpdate', async (data) => {
+          console.log('Real time update received in Profile', data)
+          
+          // Cập nhật rank cá nhân khi có thay đổi leaderboard
+          try {
+            const rankRes = await getMyRank()
+            if (rankRes?.success && rankRes?.data) {
+              setUserStats(prev => ({ ...prev, rank: rankRes.data.rank }))
+            }
+          } catch (e) {
+            console.error('Failed to update personal rank in Profile:', e)
+          }
+        })
+      } catch (error) {
+        console.error('SignalR connection failed in Profile:', error)
+      }
+    }
+    
+    if (isAuthenticated()) {
+      setupSignalR()
+    }
+
+    return () => {
+      const conn = getConnection()
+      if (conn) {
+        conn.off('LeaderboardUpdate')
+      }
+      stopLeaderboardConnection()
+    }
+  }, [])
 
   const fetchUserStats = async () => {
     try {

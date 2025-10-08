@@ -42,8 +42,15 @@ export default function Home() {
           // fetch leaderboard
           await fetchLeaderboard()
 
-          // update user rank and best score
-          setUser(prev => ({ ...prev, rank: data.rank, bestScore: data.score }))
+          // update personal rank when leaderboard is updated
+          try {
+            const rankRes = await getMyRank()
+            if (rankRes?.success && rankRes?.data) {
+              setUser(prev => ({ ...prev, rank: rankRes.data.rank }))
+            }
+          } catch (e) {
+            console.error('Failed to update personal rank:', e)
+          }
         })
       } catch (error) {
         console.error('SignalR connection failed in Home:', error)

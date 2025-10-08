@@ -1,3 +1,5 @@
+import { getMessageConnection, startMessageConnection, stopMessageConnection } from './signalr'
+
 const API_BASE_URL = 'https://localhost:7034/api'
 
 export const sendMessage = async (receiverId, content) => {
@@ -6,6 +8,8 @@ export const sendMessage = async (receiverId, content) => {
     if (!token) {
       throw new Error('No authentication token found')
     }
+
+    await startMessageConnection()
 
     const response = await fetch(`${API_BASE_URL}/message/send`, {
       method: 'POST',

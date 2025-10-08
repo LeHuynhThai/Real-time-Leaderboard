@@ -1,4 +1,5 @@
 ﻿using API.SignalR;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,7 @@ using Service.Implementations;
 using Service.Interfaces;
 using System.Text;
 using System.Text.Json.Serialization;
+using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,10 @@ builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 
+
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 
@@ -73,10 +79,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
     };
+    // Cho phép SignalR lấy token qua query string khi dùng WebSockets
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // Configure Authorization
 builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -89,6 +110,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");
+app.MapHub<MessageHub>("/hubs/message");
 
 using (var scope = app.Services.CreateScope())
 {
@@ -96,5 +118,6 @@ using (var scope = app.Services.CreateScope())
     await UserSeed.SeedAsync(db);
     await ScoreSeed.SeedAsync(db);
 }
+
 
 app.Run();

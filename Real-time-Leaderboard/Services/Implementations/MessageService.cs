@@ -1,6 +1,7 @@
 using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
+using Services.DTOs;
 
 namespace Service.Implementations
 {
@@ -8,36 +9,20 @@ namespace Service.Implementations
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IUserRepository _userRepository;
-
-        public MessageService(IMessageRepository messageRepository, IUserRepository userRepository)
+        private readonly INotificationService _notification;
+        public MessageService(IMessageRepository messageRepository, IUserRepository userRepository, INotificationService notification)
         {
             _messageRepository = messageRepository;
             _userRepository = userRepository;
+            _notification = notification;
         }
 
         public async Task<Message> SendMessage(int senderId, int receiverId, string content)
         {
-            if (senderId == receiverId)
-            {
-                throw new ArgumentException("Cannot send message to yourself", nameof(receiverId));
-            }
             if (string.IsNullOrWhiteSpace(content))
             {
                 throw new ArgumentException("Message content is required", nameof(content));
             }
-
-            // Validate users exist
-            var sender = await _userRepository.GetUserById(senderId);
-            if (sender == null)
-            {
-                throw new InvalidOperationException($"Sender with ID {senderId} not found");
-            }
-            var receiver = await _userRepository.GetUserById(receiverId);
-            if (receiver == null)
-            {
-                throw new InvalidOperationException($"Receiver with ID {receiverId} not found");
-            }
-
             var message = new Message
             {
                 SenderId = senderId,
@@ -45,8 +30,15 @@ namespace Service.Implementations
                 Content = content.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
-
-            return await _messageRepository.AddMessage(message);
+            var savedMessage = await _messageRepository.AddMessage(message);
+            await _notification.NotifyNewMessage(new MessageNotificationDto
+            {
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                Message = message.Content
+            });
+            
+            return savedMessage;
         }
 
         public Task<List<Message>> GetConversation(int userId1, int userId2)
