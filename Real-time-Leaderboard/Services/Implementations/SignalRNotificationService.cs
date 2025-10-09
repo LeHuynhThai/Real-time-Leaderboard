@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Service.Interfaces;
-using Services.DTOs;
+using Repository.DTOs;
 
 namespace API.SignalR
 {

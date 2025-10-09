@@ -1,7 +1,7 @@
 using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
-using Services.DTOs;
+using Repository.DTOs;
 
 namespace Service.Implementations
 {

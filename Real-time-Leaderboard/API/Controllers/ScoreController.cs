@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using System.Security.Claims;
+using Repository.DTOs;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -107,10 +108,5 @@ namespace API.Controllers
             }
             return userId;
         }
-    }
-
-    public class SubmitScoreRequest
-    {
-        public int Score { get; set; }
     }
 }

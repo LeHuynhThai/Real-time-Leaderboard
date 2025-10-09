@@ -1,4 +1,4 @@
-namespace Services.DTOs
+namespace Repository.DTOs
 {
     public class MessageNotificationDto
     {

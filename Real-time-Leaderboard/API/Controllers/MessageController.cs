@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using System.Security.Claims;
+using Repository.DTOs;
 
 namespace API.Controllers
 {
@@ -109,12 +110,6 @@ namespace API.Controllers
             }
             return userId;
         }
-    }
-
-    public class SendMessageRequest
-    {
-        public int ReceiverId { get; set; }
-        public string Content { get; set; }
     }
 }
 
