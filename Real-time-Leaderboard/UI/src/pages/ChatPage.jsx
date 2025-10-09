@@ -6,6 +6,7 @@ import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../ser
 import { getFriendsList } from '../services/friendService.js'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import '../styles/ChatPage.css'
 
 export default function ChatPage() {
   const navigate = useNavigate()
@@ -47,25 +48,27 @@ export default function ChatPage() {
   if (!isAuthenticated()) return null
 
   return (
-    <main className="chat-page" style={{ minHeight: '100vh', background: '#f8f9fa' }}>
-      <div className="container" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+    <main className="chat-page">
+      <div className="container">
         <Header user={user} onLogout={handleLogout} />
 
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 16, marginTop: 24 }}>
-          <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: 12 }}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>Chats</div>
-            {loading ? (
-              <div style={{ color: '#666' }}>Loading...</div>
-            ) : (
-              <ChatList currentUserId={user?.userId} friends={friends} onSelect={setSelected} />
-            )}
+        <div className="chat-layout">
+          <div className="chat-sidebar">
+            <div className="chat-sidebar-header">Chats</div>
+            <div className="chat-list-container chat-list-scroll">
+              {loading ? (
+                <div className="loading-text">Loading...</div>
+              ) : (
+                <ChatList currentUserId={user?.userId} friends={friends} onSelect={setSelected} />
+              )}
+            </div>
           </div>
 
-          <div style={{ minHeight: 520 }}>
+          <div className="chat-main">
             {selected ? (
               <ChatWindow currentUserId={user?.userId} otherUser={selected} onSent={() => {}} />
             ) : (
-              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', border: '1px solid #e5e7eb', borderRadius: 12, background: '#fff' }}>
+              <div className="chat-placeholder">
                 Select a chat to start messaging
               </div>
             )}
