@@ -20,15 +20,15 @@ Hệ thống bảng xếp hạng thời gian thực, cho phép người dùng ch
 
 #### 2. Chạy Backend API
 
-cd API
-dotnet restore
-dotnet run
+- cd API
+- dotnet restore
+- dotnet run
 
 #### 3. Chạy Frontend
 
-cd UI
-npm install
-npm start
+- cd UI
+- npm install
+- npm start
 
 ## Demo
 ![alt text](Real-time-Leaderboard/DemoPhoto/image.png)
