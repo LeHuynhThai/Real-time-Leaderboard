@@ -28,11 +28,3 @@ Hệ thống bảng xếp hạng thời gian thực, cho phép người dùng ch
 - npm start
 
 ## Demo
-![alt text](Real-time-Leaderboard/DemoPhoto/image.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image1.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image2.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image3.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image4.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image5.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image6.png)
-![alt text](Real-time-Leaderboard/DemoPhoto/image7.png)

@@ -1,6 +1,8 @@
 ﻿using API.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Repository.Data;
 using Repository.Implementations;
 using Repository.Interfaces;
 using Repository.Redis;
@@ -10,6 +12,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add EF Core DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add Redis Connection
 builder.Services.AddSingleton<IRedisConnectionManager>(sp =>
@@ -38,9 +44,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-builder.Services.AddScoped<IUserRepository, RedisUserRepository>();
+builder.Services.AddScoped<IUserRepository, SqlUserRepository>();
 builder.Services.AddScoped<IDataSeeder, DataSeeder>();
-builder.Services.AddScoped<IScoreRepository, RedisScoreRepository>();
+builder.Services.AddScoped<IScoreRepository, SqlScoreRepository>();
+builder.Services.AddScoped<IScoreHistoryRepository, SqlScoreHistoryRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
