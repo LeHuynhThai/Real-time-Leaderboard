@@ -72,9 +72,8 @@ namespace Service.Implementations
         public async Task<int> GetMyRank(int UserId)
         {
             var my = await _scoreRepository.GetScoreById(UserId);
-            var myScore = my?.UserScore ?? 0;
             var myupdateAt = my?.UpdatedAt ?? DateTime.MinValue;
-            var rank = await _scoreRepository.GetUserRank(myScore, myupdateAt);
+            var rank = await _scoreRepository.GetUserRank(UserId, myupdateAt);
             return rank + 1;
         }
     }

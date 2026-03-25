@@ -1,29 +1,29 @@
 ﻿using API.SignalR;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Repository;
 using Repository.Implementations;
 using Repository.Interfaces;
-using Repository.Seed;
+using Repository.Redis;
 using Service.Implementations;
 using Service.Interfaces;
 using System.Text;
 using System.Text.Json.Serialization;
-using API.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add Redis Connection
+builder.Services.AddSingleton<IRedisConnectionManager>(sp =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Redis");
+    return new RedisConnectionManager(connectionString);
+});
 
 // Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3001", "http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -38,18 +38,12 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRepository, RedisUserRepository>();
+builder.Services.AddScoped<IDataSeeder, DataSeeder>();
+builder.Services.AddScoped<IScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddScoped<IScoreRepository, ScoreRepository>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
-
-builder.Services.AddScoped<IFriendRepository, FriendRepository>();
-builder.Services.AddScoped<IFriendService, FriendService>();
-
-// Messages
-builder.Services.AddScoped<IMessageRepository, MessageRepository>();
-builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 
 // Add SignalR
@@ -57,10 +51,6 @@ builder.Services.AddSignalR();
 
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
-
-// Add SignalR
-builder.Services.AddSignalR();
-builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -110,14 +100,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");
-app.MapHub<MessageHub>("/hubs/message");
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await UserSeed.SeedAsync(db);
-    await ScoreSeed.SeedAsync(db);
-}
-
 
 app.Run();

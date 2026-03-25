@@ -37,11 +37,6 @@ namespace Service.Implementations
                 new Claim("userId", user.Id.ToString())
             };
 
-            if (user.Role != null)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, user.Role.ToString()));
-            }
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

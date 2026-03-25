@@ -73,6 +73,7 @@ namespace API.Controllers
             });
         }
 
+        [AllowAnonymous]
         [HttpGet("all")]
         public async Task<IActionResult> GetLeaderboard(int n = 0)
         {

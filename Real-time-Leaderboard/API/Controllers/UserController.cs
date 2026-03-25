@@ -58,9 +58,7 @@ namespace API.Controllers
                         {
                             userId = user.Id,
                             userName = user.UserName,
-                            email = user.Email,
-                            avatar = user.Avatar,
-                            role = user.Role.ToString()
+                            email = user.Email
                         },
                         token = token
                     }
@@ -76,85 +74,6 @@ namespace API.Controllers
         public async Task<IActionResult> Logout()
         {
             return Ok(new { message = "Logged out successfully" });
-        }
-
-        [HttpPost("update-avatar")]
-        public async Task<IActionResult> UpdateAvatar(IFormFile avatar)
-        {
-            var userId = GetCurrentUserId();
-            try
-            {
-                if (avatar == null || avatar.Length == 0)
-                {
-                    return BadRequest(new { success = false, message = "No file uploaded" });
-                }
-                if (avatar.Length > 1024 * 1024)
-                {
-                    return BadRequest(new { success = false, message = "File size too large. Maximum size is 1MB" });
-                }
-
-                var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-                if (!allowedTypes.Contains(avatar.ContentType))
-                {
-                    return BadRequest(new { success = false, message = "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed" });
-                }
-
-                // convert to base64
-                using var memoryStream = new MemoryStream();
-                await avatar.CopyToAsync(memoryStream);
-                var imageBytes = memoryStream.ToArray();
-                var base64String = Convert.ToBase64String(imageBytes);
-                var dataUrl = $"data:{avatar.ContentType};base64,{base64String}";
-
-                var user = await _userService.UpdateAvatar(userId, dataUrl);
-                return Ok(new
-                {
-                    success = true,
-                    data = new
-                    {
-                        avatar = user.Avatar
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchUsers([FromQuery] string query, [FromQuery] int limit = 10)
-        {
-            try
-            {
-                var users = await _userService.SearchUsers(query, limit);
-                
-                // Transform users to ensure proper JSON serialization
-                var userResults = users.Select(u => new
-                {
-                    Id = u.Id,
-                    UserName = u.UserName,
-                    Email = u.Email,
-                    Avatar = u.Avatar,
-                    Role = u.Role.ToString(),
-                    CreatedAt = u.CreatedAt
-                }).ToList();
-                
-                return Ok(new { success = true, data = userResults });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { success = false, message = ex.Message });
-            }
-        }
-        private int GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId) || userId <= 0)
-            {
-                throw new UnauthorizedAccessException("Invalid or missing user ID in token");
-            }
-            return userId;
         }
     }
 }

@@ -9,6 +9,6 @@ namespace Repository.Interfaces
         Task<Score> GetUserById(int UserId);
         Task<Score> UpdateScore(Score scoreSubmission);
         Task<Score> GetScoreById(int UserId);
-        Task<int> GetUserRank(int myScore, DateTime updatedAt);
+        Task<int> GetUserRank(int userId, DateTime updatedAt);
     }
 }

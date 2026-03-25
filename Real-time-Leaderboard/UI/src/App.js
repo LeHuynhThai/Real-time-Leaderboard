@@ -4,11 +4,7 @@ import Home from './pages/Home'
 import Leaderboard from './pages/Leaderboard'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
-import Profile from './pages/Profile'
-import ChatPage from './pages/ChatPage'
-import FriendsPage from './pages/FriendsPage'
 import 'react-toastify/dist/ReactToastify.css'
-import SearchPage from './pages/SearchPage.jsx'
 
 function Game() {
   return (
@@ -34,10 +30,6 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/play" element={<Game />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/search" element={<SearchPage />} />
-        <Route path="/friends" element={<FriendsPage />} />
       </Routes>
       <ToastContainer
         position="top-right"
