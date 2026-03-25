@@ -4,7 +4,9 @@ namespace Service.Interfaces
 {
     public interface IScoreService
     {
-        Task<List<Score>> GetLeaderboard();
+        Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100);
+        Task<int> GetLeaderboardCount();
+        Task<List<(Score Score, int Rank)>> SearchPlayers(string query);
         Task<Score> SaveScore(int UserId, int score);
         Task<Score> GetMyScore(int UserId);
         Task<int> GetMyRank(int UserId);

@@ -42,13 +42,13 @@ namespace Repository.Implementations
             return scoreSubmission;
         }
 
-        public async Task<List<Score>> GetLeaderboard()
+        public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
         {
-            // Get top 100 scores from sorted set (descending order)
+            // Get scores from sorted set (descending order) with pagination
             var sortedSetEntries = await _db.SortedSetRangeByRankWithScoresAsync(
                 LeaderboardKey,
-                start: 0,
-                stop: 99,
+                start: skip,
+                stop: skip + take - 1,
                 order: Order.Descending
             );
 
@@ -65,6 +65,41 @@ namespace Repository.Implementations
             }
 
             return scores;
+        }
+
+        public async Task<int> GetLeaderboardCount()
+        {
+            var count = await _db.SortedSetLengthAsync(LeaderboardKey);
+            return (int)count;
+        }
+
+        public async Task<List<(Score Score, int Rank)>> SearchPlayers(string query)
+        {
+            var lowerQuery = query.ToLower();
+            // Get all entries from sorted set (full leaderboard)
+            var sortedSetEntries = await _db.SortedSetRangeByRankWithScoresAsync(
+                LeaderboardKey,
+                start: 0,
+                stop: -1,
+                order: Order.Descending
+            );
+
+            var results = new List<(Score Score, int Rank)>();
+            int rank = 1;
+
+            foreach (var entry in sortedSetEntries)
+            {
+                var userId = (int)entry.Element;
+                var userScore = await GetScoreById(userId);
+                if (userScore != null && 
+                    userScore.User.UserName.ToLower().Contains(lowerQuery))
+                {
+                    results.Add((userScore, rank)); // Actual rank in global leaderboard
+                }
+                rank++;
+            }
+
+            return results;
         }
 
         public async Task<Score> GetUserById(int UserId)

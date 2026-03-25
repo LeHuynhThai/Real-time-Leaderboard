@@ -25,15 +25,50 @@ namespace Repository.Implementations
             return scoreSubmission;
         }
 
-        public async Task<List<Score>> GetLeaderboard()
+        public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
         {
             return await _context.Scores
                 .AsNoTracking()
                 .Where(s => s.Status == SubmissionStatus.Approved)
                 .OrderByDescending(s => s.UserScore)
-                .Take(100)
+                .Skip(skip)
+                .Take(take)
                 .Include(s => s.User)
                 .ToListAsync();
+        }
+
+        public async Task<int> GetLeaderboardCount()
+        {
+            return await _context.Scores
+                .AsNoTracking()
+                .Where(s => s.Status == SubmissionStatus.Approved)
+                .CountAsync();
+        }
+
+        public async Task<List<(Score Score, int Rank)>> SearchPlayers(string query)
+        {
+            var lowerQuery = query.ToLower();
+            
+            // Get all approved scores ordered by score descending
+            var allScores = await _context.Scores
+                .AsNoTracking()
+                .Where(s => s.Status == SubmissionStatus.Approved)
+                .OrderByDescending(s => s.UserScore)
+                .Include(s => s.User)
+                .ToListAsync();
+            
+            // Filter matching players and calculate their actual rank
+            var results = new List<(Score Score, int Rank)>();
+            for (int i = 0; i < allScores.Count; i++)
+            {
+                var score = allScores[i];
+                if (score.User.UserName.ToLower().Contains(lowerQuery))
+                {
+                    results.Add((score, i + 1)); // Actual rank is position in full leaderboard
+                }
+            }
+            
+            return results;
         }
 
         public async Task<Score> GetUserById(int userId)
@@ -52,6 +87,7 @@ namespace Repository.Implementations
         public async Task<Score> UpdateScore(Score scoreSubmission)
         {
             var existingScore = await _context.Scores
+                .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.UserId == scoreSubmission.UserId);
 
             if (existingScore == null)

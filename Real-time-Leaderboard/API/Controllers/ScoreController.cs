@@ -75,15 +75,34 @@ namespace API.Controllers
 
         [AllowAnonymous]
         [HttpGet("all")]
-        public async Task<IActionResult> GetLeaderboard(int n = 0)
+        public async Task<IActionResult> GetLeaderboard(int skip = 0, int take = 100)
         {
-            var result = await _scoreService.GetLeaderboard();
-            var data = n > 0 ? result.Take(n) : result;
-            var response = data.Select((s, index) => new
+            var result = await _scoreService.GetLeaderboard(skip, take);
+            var totalCount = await _scoreService.GetLeaderboardCount();
+            var response = result.Select((s, index) => new
             {
-                Rank = index + 1,
+                Rank = skip + index + 1,
                 UserName = s.User.UserName,
                 Score = s.UserScore
+            });
+            return Ok(new { success = true, data = response, totalCount });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchPlayers(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return BadRequest(new { success = false, message = "Query is required" });
+            }
+
+            var result = await _scoreService.SearchPlayers(query);
+            var response = result.Select(item => new
+            {
+                Rank = item.Rank,  // Now returns actual global rank
+                UserName = item.Score.User.UserName,
+                Score = item.Score.UserScore
             });
             return Ok(new { success = true, data = response });
         }

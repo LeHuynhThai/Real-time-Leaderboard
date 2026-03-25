@@ -16,9 +16,19 @@ namespace Service.Implementations
             _notification = notification;
         }
 
-        public async Task<List<Score>> GetLeaderboard()
+        public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
         {
-            return await _scoreRepository.GetLeaderboard();
+            return await _scoreRepository.GetLeaderboard(skip, take);
+        }
+
+        public async Task<int> GetLeaderboardCount()
+        {
+            return await _scoreRepository.GetLeaderboardCount();
+        }
+
+        public async Task<List<(Score Score, int Rank)>> SearchPlayers(string query)
+        {
+            return await _scoreRepository.SearchPlayers(query);
         }
 
         public async Task<Score> SaveScore(int UserId, int score)

@@ -35,15 +35,26 @@ export async function getMyScore() {
   }
 }
 
-// Fetch leaderboard with optional limit n (default to show more entries for full view)
-export async function getLeaderboard(n) {
+// Fetch leaderboard with pagination (skip/take)
+export async function getLeaderboard(skip = 0, take = 100) {
   try {
-    const query = typeof n === 'number' ? `?n=${n}` : ''
-      const response = await http(`/api/Score/all${query}`)
+    const query = `?skip=${skip}&take=${take}`
+    const response = await http(`/api/Score/all${query}`)
     return response
   } catch (error) {
     console.error('Error fetching leaderboard:', error)
     throw new Error(error.message || 'Error fetching leaderboard')
+  }
+}
+
+// Search players by username
+export async function searchPlayers(query) {
+  try {
+    const response = await http(`/api/Score/search?query=${encodeURIComponent(query)}`)
+    return response
+  } catch (error) {
+    console.error('Error searching players:', error)
+    throw new Error(error.message || 'Error searching players')
   }
 }
 
