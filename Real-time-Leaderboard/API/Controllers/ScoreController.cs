@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Service.Interfaces;
 using System.Security.Claims;
-using Repository.DTOs;
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -18,12 +17,12 @@ namespace API.Controllers
         }
 
         [HttpPost("save-score")]
-        public async Task<IActionResult> UpdateScore([FromBody] SubmitScoreRequest request)
+        public async Task<IActionResult> UpdateScore([FromBody] int score)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _scoreService.SaveScore(userId, request.Score);
+                var result = await _scoreService.SaveScore(userId, score);
                 return Ok(new
                 {
                     success = true,

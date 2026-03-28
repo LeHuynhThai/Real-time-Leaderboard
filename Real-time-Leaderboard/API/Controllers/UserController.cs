@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
-using Repository.DTOs;
 
 namespace API.Controllers
 {
@@ -19,16 +18,10 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] User user)
         {
             try
             {
-                var user = new User
-                {
-                    UserName = request.Username,
-                    Email = request.Email,
-                    PasswordHash = request.Password
-                };
                 var result = await _userService.Register(user);
                 return Ok(new { success = true, data = result });
             }
@@ -39,14 +32,14 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] User user)
         {
             try
             {
-                var user = await _userService.Login(request.Username, request.Password);
+                var loggedInUser = await _userService.Login(user.UserName, user.PasswordHash);
 
                 // Generate JWT token
-                var token = _jwtTokenService.GenerateToken(user);
+                var token = _jwtTokenService.GenerateToken(loggedInUser);
 
                 return Ok(new
                 {
@@ -55,9 +48,9 @@ namespace API.Controllers
                     {
                         user = new
                         {
-                            userId = user.Id,
-                            userName = user.UserName,
-                            email = user.Email
+                            userId = loggedInUser.Id,
+                            userName = loggedInUser.UserName,
+                            email = loggedInUser.Email
                         },
                         token = token
                     }

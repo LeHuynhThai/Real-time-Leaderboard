@@ -19,7 +19,7 @@ namespace Repository.Implementations
             scoreSubmission.CreatedAt = DateTime.UtcNow;
             scoreSubmission.UpdatedAt = DateTime.UtcNow;
 
-            _context.Scores.Add(scoreSubmission);
+            _context.Score.Add(scoreSubmission);
             await _context.SaveChangesAsync();
 
             return scoreSubmission;
@@ -27,7 +27,7 @@ namespace Repository.Implementations
 
         public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
         {
-            return await _context.Scores
+            return await _context.Score
                 .AsNoTracking()
                 .Where(s => s.Status == SubmissionStatus.Approved)
                 .OrderByDescending(s => s.UserScore)
@@ -39,7 +39,7 @@ namespace Repository.Implementations
 
         public async Task<int> GetLeaderboardCount()
         {
-            return await _context.Scores
+            return await _context.Score
                 .AsNoTracking()
                 .Where(s => s.Status == SubmissionStatus.Approved)
                 .CountAsync();
@@ -50,7 +50,7 @@ namespace Repository.Implementations
             var lowerQuery = query.ToLower();
             
             // Get all approved scores ordered by score descending
-            var allScores = await _context.Scores
+            var allScores = await _context.Score
                 .AsNoTracking()
                 .Where(s => s.Status == SubmissionStatus.Approved)
                 .OrderByDescending(s => s.UserScore)
@@ -73,7 +73,7 @@ namespace Repository.Implementations
 
         public async Task<Score> GetScoreById(int userId)
         {
-            return await _context.Scores
+            return await _context.Score
                 .AsNoTracking()
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.UserId == userId);
@@ -81,7 +81,7 @@ namespace Repository.Implementations
 
         public async Task<Score> UpdateScore(Score scoreSubmission)
         {
-            var existingScore = await _context.Scores
+            var existingScore = await _context.Score
                 .Include(s => s.User)
                 .FirstOrDefaultAsync(s => s.UserId == scoreSubmission.UserId);
 
@@ -100,7 +100,7 @@ namespace Repository.Implementations
 
         public async Task<int> GetUserRank(int userId, DateTime updatedAt)
         {
-            var userScore = await _context.Scores
+            var userScore = await _context.Score
                 .AsNoTracking()
                 .Where(s => s.UserId == userId && s.Status == SubmissionStatus.Approved)
                 .Select(s => s.UserScore)
@@ -111,7 +111,7 @@ namespace Repository.Implementations
                 return -1;
             }
 
-            var rank = await _context.Scores
+            var rank = await _context.Score
                 .AsNoTracking()
                 .Where(s => s.UserScore > userScore && s.Status == SubmissionStatus.Approved)
                 .CountAsync();

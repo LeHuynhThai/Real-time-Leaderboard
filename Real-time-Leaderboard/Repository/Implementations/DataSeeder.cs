@@ -27,43 +27,62 @@ namespace Repository.Implementations
 
         public async Task<bool> HasDataAsync()
         {
-            return await _context.Users.AnyAsync() || await _context.Scores.AnyAsync();
+            return await _context.User.AnyAsync() || await _context.Score.AnyAsync();
         }
 
         public async Task SeedAsync(int count)
         {
-            const string defaultPassword = "password123";
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
-
-            var userFaker = new Faker<User>()
-                .RuleFor(u => u.UserName, (f, u) => $"user_{f.IndexGlobal + 1}")
-                .RuleFor(u => u.Email, (f, u) => $"user{f.IndexGlobal + 1}@test.com")
-                .RuleFor(u => u.PasswordHash, _ => passwordHash)
-                .RuleFor(u => u.CreatedAt, f => f.Date.Past(1));
-
-            var seededScores = new List<(int UserId, string Username, int Score)>();
-
-            for (int i = 0; i < count; i++)
+            if (await HasDataAsync())
             {
-                var user = userFaker.Generate();
-                var createdUser = await _userRepository.AddUser(user);
-
-                var scoreFaker = new Faker<Score>()
-                    .RuleFor(s => s.UserId, _ => createdUser.Id)
-                    .RuleFor(s => s.UserScore, f => f.Random.Int(0, 100000))
-                    .RuleFor(s => s.CreatedAt, _ => createdUser.CreatedAt)
-                    .RuleFor(s => s.UpdatedAt, f => f.Date.Recent(30))
-                    .RuleFor(s => s.Status, _ => SubmissionStatus.Approved);
-
-                var score = scoreFaker.Generate();
-                await _scoreRepository.CreateScore(score);
-
-                // Collect for Redis sync
-                seededScores.Add((createdUser.Id, createdUser.UserName, score.UserScore));
+                return;
             }
 
-            // Sync all seeded scores to Redis
-            await _redisScoreRepository.SyncFromSqlAsync(seededScores);
+            // Seed users
+            var userFaker = new Faker<User>()
+                .RuleFor(u => u.UserName, f => f.Internet.UserName())
+                .RuleFor(u => u.Email, f => f.Internet.Email())
+                .RuleFor(u => u.PasswordHash, f => f.Internet.Password())
+                .RuleFor(u => u.CreatedAt, f => f.Date.Past(1))
+                .RuleFor(u => u.IsActive, f => true);
+
+            var users = userFaker.Generate(count);
+
+            foreach (var user in users)
+            {
+                var existingUser = await _context.User
+                    .FirstOrDefaultAsync(u => u.UserName == user.UserName || u.Email == user.Email);
+
+                if (existingUser == null)
+                {
+                    _context.User.Add(user);
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            // Seed scores
+            var seededUsers = await _context.User.ToListAsync();
+            var scoreFaker = new Faker<Score>()
+                .RuleFor(s => s.UserScore, f => f.Random.Int(100, 10000))
+                .RuleFor(s => s.CreatedAt, f => f.Date.Past(1))
+                .RuleFor(s => s.UpdatedAt, f => f.Date.Recent(30))
+                .RuleFor(s => s.Status, f => SubmissionStatus.Approved);
+
+            foreach (var user in seededUsers)
+            {
+                var scoreCount = new Random().Next(1, 4);
+                for (int i = 0; i < scoreCount; i++)
+                {
+                    var score = scoreFaker.Generate();
+                    score.UserId = user.Id;
+                    _context.Score.Add(score);
+                }
+            }
+            await _context.SaveChangesAsync();
+
+            // Sync to Redis
+            var allScores = await _scoreRepository.GetLeaderboard(0, 10000);
+            var scores = allScores.Select(s => (s.UserId, s.User.UserName, s.UserScore)).ToList();
+            await _redisScoreRepository.SyncFromSqlAsync(scores);
         }
     }
 }

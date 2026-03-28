@@ -45,7 +45,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 
 builder.Services.AddScoped<IUserRepository, SqlUserRepository>();
-builder.Services.AddScoped<IDataSeeder, DataSeeder>();
 builder.Services.AddScoped<IScoreRepository, SqlScoreRepository>();
 builder.Services.AddScoped<IRedisScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -113,24 +112,6 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         Console.WriteLine($"Warning: Redis sync failed - {ex.Message}");
-    }
-}
-
-// Startup: Seed database if empty
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
-        if (!await seeder.HasDataAsync())
-        {
-            await seeder.SeedAsync(10);
-            Console.WriteLine("Database seeded successfully");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Warning: Data seeding failed - {ex.Message}");
     }
 }
 
