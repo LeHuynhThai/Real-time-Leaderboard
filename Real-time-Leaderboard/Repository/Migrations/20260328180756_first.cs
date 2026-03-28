@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "User",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -26,33 +26,11 @@ namespace Repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_User", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ScoreHistories",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ScoreValue = table.Column<int>(type: "int", nullable: false),
-                    RecordedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    GameMode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "default")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ScoreHistories", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ScoreHistories_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Scores",
+                name: "Score",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -65,39 +43,29 @@ namespace Repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Scores", x => x.Id);
+                    table.PrimaryKey("PK_Score", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Scores_Users_UserId",
+                        name: "FK_Score_User_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ScoreHistories_RecordedAt",
-                table: "ScoreHistories",
-                column: "RecordedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ScoreHistories_UserId",
-                table: "ScoreHistories",
+                name: "IX_Score_UserId",
+                table: "Score",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Scores_UserId",
-                table: "Scores",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
+                name: "IX_User_Email",
+                table: "User",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_UserName",
-                table: "Users",
+                name: "IX_User_UserName",
+                table: "User",
                 column: "UserName",
                 unique: true);
         }
@@ -106,13 +74,10 @@ namespace Repository.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ScoreHistories");
+                name: "Score");
 
             migrationBuilder.DropTable(
-                name: "Scores");
-
-            migrationBuilder.DropTable(
-                name: "Users");
+                name: "User");
         }
     }
 }

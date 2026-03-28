@@ -6,6 +6,7 @@ using Repository.Data;
 using Repository.Implementations;
 using Repository.Interfaces;
 using Repository.Redis;
+using Repository.Seeder;
 using Service.Implementations;
 using Service.Interfaces;
 using System.Text;
@@ -115,9 +116,22 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Startup: Seed database if empty
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await Seed.SeedDataAsync(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Data seeding failed - {ex.Message}");
+    }
+}
+
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
-// Use Authentication and Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
