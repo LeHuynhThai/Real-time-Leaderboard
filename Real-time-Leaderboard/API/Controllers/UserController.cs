@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Repository.Entities;
 using Service.Interfaces;
-using System.Security.Claims;
 using Repository.DTOs;
 
 namespace API.Controllers

@@ -71,11 +71,6 @@ namespace Repository.Implementations
             return results;
         }
 
-        public async Task<Score> GetUserById(int userId)
-        {
-            return await GetScoreById(userId);
-        }
-
         public async Task<Score> GetScoreById(int userId)
         {
             return await _context.Scores

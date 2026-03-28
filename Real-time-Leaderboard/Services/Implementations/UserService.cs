@@ -21,7 +21,7 @@ namespace Service.Implementations
                 throw new Exception("User not found");
             }
 
-            if (!VerifyPassword(password, user.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
                 throw new Exception("Invalid password");
             }
@@ -31,60 +31,12 @@ namespace Service.Implementations
 
         public async Task<User> Register(User user)
         {
-            // hash password before saving
             if (!string.IsNullOrEmpty(user.PasswordHash))
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             }
 
             return await _userRepository.AddUser(user);
-        }
-
-        // verify password for login service
-        public bool VerifyPassword(string password, string hashedPassword)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-        }
-
-        public async Task<User> UpdateAvatar(int userId, string avatar)
-        {
-            var user = await _userRepository.GetUserById(userId);
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
-            
-            // Note: This would need to be implemented in User entity and repository
-            // For now, just return the user as is
-            return user;
-        }
-
-        public async Task<List<User>> SearchUsers(string query, int limit = 10)
-        {
-            // validate query and limit
-            if (string.IsNullOrEmpty(query))
-            {
-                throw new ArgumentNullException("search query is required", nameof(query));
-            }
-            if (limit <= 0 || limit > 50)
-            {
-                throw new ArgumentException("Limit must be greater than 0 and less than 50", nameof(limit));
-            }
-
-            query = query.Trim();
-            if (query.Length < 2)
-            {
-                throw new ArgumentException("Search query must be at least 2 characters", nameof(query));
-            }
-
-            try
-            {
-                return await _userRepository.SearchUsers(query, limit);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Failed to search users", ex);
-            }
         }
     }
 }

@@ -1,10 +1,8 @@
-using Repository.Entities;
-
 namespace Repository.Interfaces
 {
     public interface IDataSeeder
     {
+        Task<bool> HasDataAsync();
         Task SeedAsync(int count);
-        Task ClearAllDataAsync();
     }
 }

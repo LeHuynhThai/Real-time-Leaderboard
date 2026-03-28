@@ -6,7 +6,5 @@ namespace Service.Interfaces
     {
         Task<User> Register(User user);
         Task<User> Login(string username, string password);
-        bool VerifyPassword(string password, string hashedPassword);
-        Task<List<User>> SearchUsers(string query, int limit = 10);
     }
 }

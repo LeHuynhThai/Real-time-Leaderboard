@@ -1,25 +1,33 @@
 using Bogus;
+using Microsoft.EntityFrameworkCore;
+using Repository.Data;
 using Repository.Entities;
 using Repository.Interfaces;
-using Repository.Redis;
-using StackExchange.Redis;
 
 namespace Repository.Implementations
 {
     public class DataSeeder : IDataSeeder
     {
+        private readonly AppDbContext _context;
         private readonly IUserRepository _userRepository;
         private readonly IScoreRepository _scoreRepository;
-        private readonly IDatabase _db;
+        private readonly IRedisScoreRepository _redisScoreRepository;
 
         public DataSeeder(
+            AppDbContext context,
             IUserRepository userRepository,
             IScoreRepository scoreRepository,
-            IRedisConnectionManager redis)
+            IRedisScoreRepository redisScoreRepository)
         {
+            _context = context;
             _userRepository = userRepository;
             _scoreRepository = scoreRepository;
-            _db = redis.GetDatabase();
+            _redisScoreRepository = redisScoreRepository;
+        }
+
+        public async Task<bool> HasDataAsync()
+        {
+            return await _context.Users.AnyAsync() || await _context.Scores.AnyAsync();
         }
 
         public async Task SeedAsync(int count)
@@ -32,6 +40,8 @@ namespace Repository.Implementations
                 .RuleFor(u => u.Email, (f, u) => $"user{f.IndexGlobal + 1}@test.com")
                 .RuleFor(u => u.PasswordHash, _ => passwordHash)
                 .RuleFor(u => u.CreatedAt, f => f.Date.Past(1));
+
+            var seededScores = new List<(int UserId, string Username, int Score)>();
 
             for (int i = 0; i < count; i++)
             {
@@ -47,18 +57,13 @@ namespace Repository.Implementations
 
                 var score = scoreFaker.Generate();
                 await _scoreRepository.CreateScore(score);
-            }
-        }
 
-        public async Task ClearAllDataAsync()
-        {
-            var server = _db.Multiplexer.GetServer(_db.Multiplexer.GetEndPoints().First());
-            
-            var keys = server.Keys(pattern: "*").ToArray();
-            foreach (var key in keys)
-            {
-                await _db.KeyDeleteAsync(key);
+                // Collect for Redis sync
+                seededScores.Add((createdUser.Id, createdUser.UserName, score.UserScore));
             }
+
+            // Sync all seeded scores to Redis
+            await _redisScoreRepository.SyncFromSqlAsync(seededScores);
         }
     }
 }

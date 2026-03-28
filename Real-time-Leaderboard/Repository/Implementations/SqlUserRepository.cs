@@ -14,7 +14,7 @@ namespace Repository.Implementations
             _context = context;
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<User?> GetUserById(int id)
         {
             return await _context.Users
                 .AsNoTracking()
@@ -37,33 +37,6 @@ namespace Repository.Implementations
             await _context.SaveChangesAsync();
 
             return user;
-        }
-
-        public async Task<User> UpdateUser(User user)
-        {
-            var existingUser = await _context.Users.FindAsync(user.Id);
-            if (existingUser == null)
-            {
-                return null;
-            }
-
-            existingUser.UserName = user.UserName;
-            existingUser.Email = user.Email;
-            existingUser.PasswordHash = user.PasswordHash;
-            existingUser.IsActive = user.IsActive;
-            existingUser.LastLoginAt = user.LastLoginAt;
-
-            await _context.SaveChangesAsync();
-            return existingUser;
-        }
-
-        public async Task<List<User>> SearchUsers(string query, int limit = 10)
-        {
-            return await _context.Users
-                .AsNoTracking()
-                .Where(u => u.UserName.Contains(query) || u.Email.Contains(query))
-                .Take(limit)
-                .ToListAsync();
         }
     }
 }

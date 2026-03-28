@@ -11,7 +11,6 @@ namespace Service.Implementations
     public class JwtTokenService : IJwtTokenService
     {
         private readonly IConfiguration _configuration;
-        private static readonly HashSet<string> _revokedTokens = new HashSet<string>();
         private readonly string _key;
         private readonly string _issuer;
         private readonly string _audience;
@@ -48,33 +47,6 @@ namespace Service.Implementations
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
-
-        public bool ValidateToken(string token)
-        {
-            try
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.UTF8.GetBytes(_key);
-
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = true,
-                    ValidIssuer = _issuer,
-                    ValidateAudience = true,
-                    ValidAudience = _audience,
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
     }
 }

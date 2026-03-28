@@ -1,202 +1,108 @@
-using Repository.Entities;
+using StackExchange.Redis;
 using Repository.Interfaces;
 using Repository.Redis;
-using System.Text.Json;
-using StackExchange.Redis;
 
 namespace Repository.Implementations
 {
-    public class RedisScoreRepository : IScoreRepository
+    public class RedisScoreRepository : IRedisScoreRepository
     {
         private readonly IDatabase _db;
-        private const string LeaderboardKey = "leaderboard";
-        private const string UserHashKey = "user";
-        private const string ScoreHistoryKey = "scores";
-        private const string UserScoreKey = "userscore";
+        private const string LeaderboardKey = "leaderboard:global";
+        private const string UsernameKeyPrefix = "leaderboard:username:";
 
         public RedisScoreRepository(IRedisConnectionManager redis)
         {
             _db = redis.GetDatabase();
         }
 
-        public async Task<Score> CreateScore(Score scoreSubmission)
+        public async Task UpdateScoreAsync(int userId, string username, int score)
         {
-            var scoreData = new HashEntry[]
-            {
-                new HashEntry("score", scoreSubmission.UserScore),
-                new HashEntry("createdAt", scoreSubmission.CreatedAt.ToString("O")),
-                new HashEntry("updatedAt", scoreSubmission.UpdatedAt.ToString("O")),
-                new HashEntry("status", scoreSubmission.Status.ToString())
-            };
-
-            // Store user score data
-            await _db.HashSetAsync($"{UserScoreKey}:{scoreSubmission.UserId}", scoreData);
-
-            // Add to sorted set (leaderboard)
-            await _db.SortedSetAddAsync(LeaderboardKey, scoreSubmission.UserId, scoreSubmission.UserScore);
-
-            // Add to score history
-            var historyEntry = $"{scoreSubmission.CreatedAt:O}:{scoreSubmission.UserScore}";
-            await _db.ListLeftPushAsync($"{ScoreHistoryKey}:{scoreSubmission.UserId}", historyEntry);
-
-            return scoreSubmission;
+            var member = $"{userId}:{username}";
+            await _db.SortedSetAddAsync(LeaderboardKey, member, score);
+            await _db.StringSetAsync(UsernameKeyPrefix + userId, username);
         }
 
-        public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
+        public async Task<List<(int UserId, string Username, int Score, int Rank)>> GetTopNAsync(int n)
         {
-            // Get scores from sorted set (descending order) with pagination
-            var sortedSetEntries = await _db.SortedSetRangeByRankWithScoresAsync(
-                LeaderboardKey,
-                start: skip,
-                stop: skip + take - 1,
-                order: Order.Descending
-            );
-
-            var scores = new List<Score>();
-
-            foreach (var entry in sortedSetEntries)
-            {
-                var userId = (int)entry.Element;
-                var userScore = await GetScoreById(userId);
-                if (userScore != null)
-                {
-                    scores.Add(userScore);
-                }
-            }
-
-            return scores;
-        }
-
-        public async Task<int> GetLeaderboardCount()
-        {
-            var count = await _db.SortedSetLengthAsync(LeaderboardKey);
-            return (int)count;
-        }
-
-        public async Task<List<(Score Score, int Rank)>> SearchPlayers(string query)
-        {
-            var lowerQuery = query.ToLower();
-            // Get all entries from sorted set (full leaderboard)
-            var sortedSetEntries = await _db.SortedSetRangeByRankWithScoresAsync(
+            var results = await _db.SortedSetRangeByRankWithScoresAsync(
                 LeaderboardKey,
                 start: 0,
-                stop: -1,
-                order: Order.Descending
-            );
+                stop: n - 1,
+                order: Order.Descending);
 
-            var results = new List<(Score Score, int Rank)>();
+            var list = new List<(int UserId, string Username, int Score, int Rank)>();
             int rank = 1;
 
-            foreach (var entry in sortedSetEntries)
+            foreach (var entry in results)
             {
-                var userId = (int)entry.Element;
-                var userScore = await GetScoreById(userId);
-                if (userScore != null && 
-                    userScore.User.UserName.ToLower().Contains(lowerQuery))
+                var parts = entry.Element.ToString().Split(':', 2);
+                if (parts.Length == 2 && int.TryParse(parts[0], out int userId))
                 {
-                    results.Add((userScore, rank)); // Actual rank in global leaderboard
+                    list.Add((userId, parts[1], (int)entry.Score, rank));
                 }
                 rank++;
             }
 
-            return results;
+            return list;
         }
 
-        public async Task<Score> GetUserById(int UserId)
+        public async Task<int> GetUserRankAsync(int userId)
         {
-            return await GetScoreById(UserId);
+            var username = await _db.StringGetAsync(UsernameKeyPrefix + userId);
+            if (!username.HasValue) return -1;
+
+            var member = $"{userId}:{username}";
+            var rank = await _db.SortedSetRankAsync(LeaderboardKey, member, order: Order.Descending);
+
+            return rank.HasValue ? (int)rank.Value + 1 : -1;
         }
 
-        public async Task<Score> UpdateScore(Score scoreSubmission)
+        public async Task<int?> GetUserScoreAsync(int userId)
         {
-            var existing = await GetScoreById(scoreSubmission.UserId);
-            if (existing == null)
-            {
-                return await CreateScore(scoreSubmission);
-            }
+            var username = await _db.StringGetAsync(UsernameKeyPrefix + userId);
+            if (!username.HasValue) return null;
 
-            // Update score in hash
-            var scoreData = new HashEntry[]
-            {
-                new HashEntry("score", scoreSubmission.UserScore),
-                new HashEntry("updatedAt", scoreSubmission.UpdatedAt.ToString("O")),
-                new HashEntry("status", scoreSubmission.Status.ToString())
-            };
+            var member = $"{userId}:{username}";
+            var score = await _db.SortedSetScoreAsync(LeaderboardKey, member);
 
-            await _db.HashSetAsync($"{UserScoreKey}:{scoreSubmission.UserId}", scoreData);
-
-            // Update sorted set score
-            await _db.SortedSetAddAsync(LeaderboardKey, scoreSubmission.UserId, scoreSubmission.UserScore);
-
-            // Add to score history
-            var historyEntry = $"{scoreSubmission.UpdatedAt:O}:{scoreSubmission.UserScore}";
-            await _db.ListLeftPushAsync($"{ScoreHistoryKey}:{scoreSubmission.UserId}", historyEntry);
-
-            return scoreSubmission;
+            return score.HasValue ? (int)score.Value : null;
         }
 
-        public async Task<Score> GetScoreById(int UserId)
+        public async Task RemoveUserAsync(int userId)
         {
-            // Get user details
-            var userHash = await _db.HashGetAllAsync($"{UserHashKey}:{UserId}");
-            if (userHash.Length == 0)
+            var username = await _db.StringGetAsync(UsernameKeyPrefix + userId);
+            if (username.HasValue)
             {
-                return null;
+                var member = $"{userId}:{username}";
+                await _db.SortedSetRemoveAsync(LeaderboardKey, member);
+                await _db.KeyDeleteAsync(UsernameKeyPrefix + userId);
             }
-
-            // Get score details
-            var scoreHash = await _db.HashGetAllAsync($"{UserScoreKey}:{UserId}");
-            if (scoreHash.Length == 0)
-            {
-                return null;
-            }
-
-            var scoreDict = scoreHash.ToDictionary(h => h.Name.ToString(), h => h.Value.ToString());
-            var userDict = userHash.ToDictionary(h => h.Name.ToString(), h => h.Value.ToString());
-
-            var score = new Score
-            {
-                UserId = UserId,
-                UserScore = int.Parse(scoreDict["score"]),
-                User = new User
-                {
-                    Id = UserId,
-                    UserName = userDict.GetValueOrDefault("username", ""),
-                    Email = userDict.GetValueOrDefault("email", "")
-                }
-            };
-
-            if (scoreDict.TryGetValue("createdAt", out var createdAtStr))
-            {
-                score.CreatedAt = DateTime.Parse(createdAtStr);
-            }
-
-            if (scoreDict.TryGetValue("updatedAt", out var updatedAtStr))
-            {
-                score.UpdatedAt = DateTime.Parse(updatedAtStr);
-            }
-
-            if (scoreDict.TryGetValue("status", out var statusStr) && 
-                Enum.TryParse<SubmissionStatus>(statusStr, out var status))
-            {
-                score.Status = status;
-            }
-
-            return score;
         }
 
-        public async Task<int> GetUserRank(int userId, DateTime updatedAt)
+        public async Task SyncFromSqlAsync(List<(int UserId, string Username, int Score)> scores)
         {
-            // Get rank of user from sorted set (0-indexed)
-            var rank = await _db.SortedSetRankAsync(LeaderboardKey, userId, Order.Descending);
-            return rank.HasValue ? (int)rank.Value : -1;
+            var batch = _db.CreateBatch();
+            var tasks = new List<Task>();
+
+            // Clear existing leaderboard
+            tasks.Add(batch.KeyDeleteAsync(LeaderboardKey));
+
+            // Add all scores
+            foreach (var (userId, username, score) in scores)
+            {
+                var member = $"{userId}:{username}";
+                tasks.Add(batch.SortedSetAddAsync(LeaderboardKey, member, score));
+                tasks.Add(batch.StringSetAsync(UsernameKeyPrefix + userId, username));
+            }
+
+            batch.Execute();
+            await Task.WhenAll(tasks);
         }
 
-        // Helper method to get score history for a user
-        public async Task<List<string>> GetScoreHistory(int userId, int count = 10)
+        public async Task<bool> IsEmptyAsync()
         {
-            var history = await _db.ListRangeAsync($"{ScoreHistoryKey}:{userId}", 0, count - 1);
-            return history.Select(h => h.ToString()).ToList();
+            var count = await _db.SortedSetLengthAsync(LeaderboardKey);
+            return count == 0;
         }
     }
 }

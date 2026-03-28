@@ -1,6 +1,7 @@
 ﻿using Repository.Entities;
 using Repository.Interfaces;
 using Service.Interfaces;
+
 namespace Service.Implementations
 {
     public class ScoreService : IScoreService
@@ -8,17 +9,38 @@ namespace Service.Implementations
         private readonly IScoreRepository _scoreRepository;
         private readonly IUserRepository _userRepository;
         private readonly INotificationService _notification;
+        private readonly IRedisScoreRepository _redisScoreRepository;
 
-        public ScoreService(IScoreRepository scoreSubmissionRepository, IUserRepository userRepository, INotificationService notification)
+        public ScoreService(IScoreRepository scoreSubmissionRepository, IUserRepository userRepository, INotificationService notification, IRedisScoreRepository redisScoreRepository)
         {
             _scoreRepository = scoreSubmissionRepository;
             _userRepository = userRepository;
             _notification = notification;
+            _redisScoreRepository = redisScoreRepository;
         }
 
         public async Task<List<Score>> GetLeaderboard(int skip = 0, int take = 100)
         {
-            return await _scoreRepository.GetLeaderboard(skip, take);
+            var redisResults = await _redisScoreRepository.GetTopNAsync(skip + take);
+            
+            if (redisResults == null || redisResults.Count == 0)
+            {
+                return await _scoreRepository.GetLeaderboard(skip, take);
+            }
+
+            // Convert Redis results to Score entities with User info
+            var scores = redisResults
+                .Skip(skip)
+                .Take(take)
+                .Select(r => new Score
+                {
+                    UserId = r.UserId,
+                    UserScore = r.Score,
+                    User = new User { Id = r.UserId, UserName = r.Username }
+                })
+                .ToList();
+
+            return scores;
         }
 
         public async Task<int> GetLeaderboardCount()
@@ -34,6 +56,7 @@ namespace Service.Implementations
         public async Task<Score> SaveScore(int UserId, int score)
         {
             var existing = await _scoreRepository.GetScoreById(UserId);
+            var user = await _userRepository.GetUserById(UserId);
 
             // If no existing score, create a new one
             if (existing == null)
@@ -45,7 +68,15 @@ namespace Service.Implementations
                     Status = SubmissionStatus.Approved,
                     CreatedAt = DateTime.UtcNow
                 };
-                return await _scoreRepository.CreateScore(scoreSubmission);
+                var created = await _scoreRepository.CreateScore(scoreSubmission);
+                
+                // Update Redis
+                if (user != null)
+                {
+                    await _redisScoreRepository.UpdateScoreAsync(UserId, user.UserName, score);
+                }
+                
+                return created;
             }
 
             // If score is higher than existing score, update the score
@@ -56,6 +87,12 @@ namespace Service.Implementations
                 existing.Status = SubmissionStatus.Approved;
 
                 var updated = await _scoreRepository.UpdateScore(existing);
+
+                // Update Redis
+                if (user != null)
+                {
+                    await _redisScoreRepository.UpdateScoreAsync(UserId, user.UserName, score);
+                }
 
                 // send leaderboard update to all connected users
                 await _notification.NotifyLeaderboardUpdated(new
@@ -81,10 +118,8 @@ namespace Service.Implementations
 
         public async Task<int> GetMyRank(int UserId)
         {
-            var my = await _scoreRepository.GetScoreById(UserId);
-            var myupdateAt = my?.UpdatedAt ?? DateTime.MinValue;
-            var rank = await _scoreRepository.GetUserRank(UserId, myupdateAt);
-            return rank + 1;
+            var rank = await _redisScoreRepository.GetUserRankAsync(UserId);
+            return rank > 0 ? rank : await _scoreRepository.GetUserRank(UserId, DateTime.MinValue) + 1;
         }
     }
 }

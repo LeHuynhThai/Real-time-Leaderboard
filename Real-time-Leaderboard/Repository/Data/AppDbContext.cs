@@ -7,9 +7,8 @@ namespace Repository.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Score> Scores { get; set; }
-        public DbSet<ScoreHistory> ScoreHistories { get; set; }
+        public DbSet<User> User { get; set; }
+        public DbSet<Score> Score { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -40,22 +39,6 @@ namespace Repository.Data
 
                 entity.HasOne(e => e.User)
                       .WithMany(u => u.Scores)
-                      .HasForeignKey(e => e.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
-
-            // ScoreHistory configuration
-            modelBuilder.Entity<ScoreHistory>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.RecordedAt);
-                entity.Property(e => e.ScoreValue).IsRequired();
-                entity.Property(e => e.RecordedAt).HasDefaultValueSql("GETUTCDATE()");
-                entity.Property(e => e.GameMode).HasMaxLength(50).HasDefaultValue("default");
-
-                entity.HasOne(e => e.User)
-                      .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });

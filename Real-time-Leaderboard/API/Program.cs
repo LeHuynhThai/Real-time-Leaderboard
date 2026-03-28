@@ -47,7 +47,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddScoped<IUserRepository, SqlUserRepository>();
 builder.Services.AddScoped<IDataSeeder, DataSeeder>();
 builder.Services.AddScoped<IScoreRepository, SqlScoreRepository>();
-builder.Services.AddScoped<IScoreHistoryRepository, SqlScoreHistoryRepository>();
+builder.Services.AddScoped<IRedisScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
@@ -55,13 +55,10 @@ builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 // Add SignalR
 builder.Services.AddSignalR();
-
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
-
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-
 // Configure Authentication and Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -76,7 +73,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
     };
-    // Cho phép SignalR lấy token qua query string khi dùng WebSockets
+    // Allow SignalR to receive token via query string when using WebSockets
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -95,16 +92,53 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Configure Authorization
 builder.Services.AddAuthorization();
 
-
 var app = builder.Build();
+
+// Startup: Sync data from SQL to Redis if Redis is empty
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var redisRepo = scope.ServiceProvider.GetRequiredService<IRedisScoreRepository>();
+        var sqlRepo = scope.ServiceProvider.GetRequiredService<IScoreRepository>();
+
+        if (await redisRepo.IsEmptyAsync())
+        {
+            var sqlScores = await sqlRepo.GetLeaderboard(0, 10000);
+            var scores = sqlScores.Select(s => (s.UserId, s.User.UserName, s.UserScore)).ToList();
+            await redisRepo.SyncFromSqlAsync(scores);
+            Console.WriteLine($"Synced {scores.Count} scores from SQL to Redis");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Redis sync failed - {ex.Message}");
+    }
+}
+
+// Startup: Seed database if empty
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+        if (!await seeder.HasDataAsync())
+        {
+            await seeder.SeedAsync(10);
+            Console.WriteLine("Database seeded successfully");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Data seeding failed - {ex.Message}");
+    }
+}
 
 app.UseCors("AllowReactApp");
 app.UseHttpsRedirection();
-
 // Use Authentication and Authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHub<LeaderboardHub>("/hubs/leaderboard");
 
