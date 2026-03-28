@@ -1,76 +1,73 @@
-using Bogus;
-using Microsoft.EntityFrameworkCore;
 using Repository.Data;
 using Repository.Entities;
 
-namespace Repository.Seeder;
-
-public static class Seed
+namespace Repository.Seeder
 {
-    public static async Task SeedDataAsync(AppDbContext context)
+    public static class Seed
     {
-        const int UserCount = 50; // Fixed number of users to seed
-        
-        // Check if already seeded
-        if (await context.User.AnyAsync() || await context.Score.AnyAsync())
+        public static async Task SeedDataAsync(AppDbContext context)
         {
-            Console.WriteLine("Database already contains data. Skipping seeding.");
-            return;
-        }
-
-        Console.WriteLine("Seeding users...");
-        var userFaker = new Faker<User>()
-            .RuleFor(u => u.UserName, f => f.Internet.UserName())
-            .RuleFor(u => u.Email, f => f.Internet.Email())
-            .RuleFor(u => u.PasswordHash, f => f.Internet.Password())
-            .RuleFor(u => u.CreatedAt, f => f.Date.Past(1))
-            .RuleFor(u => u.IsActive, f => true);
-
-        var users = userFaker.Generate(UserCount);
-
-        foreach (var user in users)
-        {
-            var existingUser = await context.User
-                .FirstOrDefaultAsync(u => u.UserName == user.UserName || u.Email == user.Email);
-
-            if (existingUser == null)
+            // Check if database already has data
+            if (context.User.Any() || context.Score.Any())
             {
-                context.User.Add(user);
-                Console.WriteLine($"  + Adding user: {user.UserName}");
+                Console.WriteLine("Database already seeded. Skipping seed data insertion.");
+                return;
             }
-        }
 
-        await context.SaveChangesAsync();
-        Console.WriteLine($"Users seeded successfully!");
+            Console.WriteLine("Starting database seeding with 1000 users and scores...");
 
-        Console.WriteLine("Seeding scores...");
-        var seededUsers = await context.User.ToListAsync();
-        var scoreFaker = new Faker<Score>()
-            .RuleFor(s => s.UserScore, f => f.Random.Int(100, 10000))
-            .RuleFor(s => s.CreatedAt, f => f.Date.Past(1))
-            .RuleFor(s => s.UpdatedAt, f => f.Date.Recent(30))
-            .RuleFor(s => s.Status, f => SubmissionStatus.Approved);
+            var users = new List<User>();
+            var scores = new List<Score>();
+            var random = new Random();
 
-        foreach (var user in seededUsers)
-        {
-            var scoreCount = new Random().Next(1, 4);
-            for (int i = 0; i < scoreCount; i++)
+            // Create 1000 users with scores
+            for (int i = 1; i <= 1000; i++)
             {
-                var score = scoreFaker.Generate();
-                score.UserId = user.Id;
-                context.Score.Add(score);
+                var user = new User
+                {
+                    UserName = $"User{i}",
+                    Email = $"user{i}@example.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword($"Password{i}123"),
+                    CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 365)),
+                    LastLoginAt = DateTime.UtcNow.AddDays(-random.Next(0, 30)),
+                    IsActive = true
+                };
+
+                users.Add(user);
             }
-            Console.WriteLine($"  + Added {scoreCount} scores for user: {user.UserName}");
+
+            // Add users to context
+            await context.User.AddRangeAsync(users);
+            await context.SaveChangesAsync();
+
+            Console.WriteLine($"Inserted {users.Count} users");
+
+            // Create scores for each user (1-5 scores per user)
+            for (int i = 0; i < users.Count; i++)
+            {
+                int numberOfScores = random.Next(1, 6); // Each user has 1-5 scores
+
+                for (int j = 0; j < numberOfScores; j++)
+                {
+                    var score = new Score
+                    {
+                        UserId = users[i].Id,
+                        UserScore = random.Next(100, 10001), // Random score between 100-10000
+                        CreatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 365)).AddHours(-random.Next(0, 24)),
+                        UpdatedAt = DateTime.UtcNow.AddDays(-random.Next(0, 365)).AddHours(-random.Next(0, 24)),
+                        Status = SubmissionStatus.Approved
+                    };
+
+                    scores.Add(score);
+                }
+            }
+
+            // Add scores to context
+            await context.Score.AddRangeAsync(scores);
+            await context.SaveChangesAsync();
+
+            Console.WriteLine($"Inserted {scores.Count} scores for {users.Count} users");
+            Console.WriteLine("Database seeding completed successfully!");
         }
-
-        await context.SaveChangesAsync();
-        Console.WriteLine($"Scores seeded successfully!");
-
-        var finalUserCount = await context.User.CountAsync();
-        var finalScoreCount = await context.Score.CountAsync();
-
-        Console.WriteLine("=== Seeding Summary ===");
-        Console.WriteLine($"Total users: {finalUserCount}");
-        Console.WriteLine($"Total scores: {finalScoreCount}");
     }
 }
