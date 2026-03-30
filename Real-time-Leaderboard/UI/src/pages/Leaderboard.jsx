@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
-import { getLeaderboard, searchPlayers } from '../services/scoreService.js'
+import { getLeaderboard, searchPlayers, getMyRank } from '../services/scoreService.js'
 
 const PAGE_SIZE = 50
 
@@ -28,7 +28,21 @@ export default function Leaderboard() {
     }
     const currentUser = getCurrentUser()
     setUser(currentUser)
-    fetchLeaderboard(0)
+    // Fetch authoritative rank for current user and then load leaderboard
+    const init = async () => {
+      try {
+        const rankRes = await getMyRank()
+        if (rankRes?.success && rankRes?.data) {
+          setUser(prev => ({ ...prev, rank: rankRes.data.rank }))
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      fetchLeaderboard(0)
+    }
+
+    init()
   }, [navigate])
 
   useEffect(() => {
@@ -210,7 +224,12 @@ export default function Leaderboard() {
               ) : (
                 displayData.map((player, index) => {
                   const key = (player.userName || '').toLowerCase()
-                  const r = typeof player.rank === 'number' ? player.rank : (rankByUser.get(key) || index + 1)
+                  let r = typeof player.rank === 'number' ? player.rank : (rankByUser.get(key) || index + 1)
+                  const isCurrentUser = user && key === ((user.userName || '').toLowerCase())
+                  // If this row belongs to the current user, prefer authoritative my-rank
+                  if (isCurrentUser && typeof user?.rank === 'number') {
+                    r = user.rank
+                  }
                   const isLast = index === displayData.length - 1 && !searchQuery.trim()
                   
                   return (

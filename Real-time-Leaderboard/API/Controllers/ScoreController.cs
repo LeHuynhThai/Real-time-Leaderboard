@@ -17,12 +17,12 @@ namespace API.Controllers
         }
 
         [HttpPost("save-score")]
-        public async Task<IActionResult> UpdateScore([FromBody] int score)
+        public async Task<IActionResult> UpdateScore([FromBody] API.Models.ScoreRequest request)
         {
             try
             {
                 var userId = GetCurrentUserId();
-                var result = await _scoreService.SaveScore(userId, score);
+                var result = await _scoreService.SaveScore(userId, request.Score);
                 return Ok(new
                 {
                     success = true,

@@ -16,11 +16,18 @@ namespace API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] User user)
+        public async Task<IActionResult> Register([FromBody] API.Models.RegisterRequest request)
         {
             try
             {
-                var (registeredUser, token) = await _authService.Register(user);
+                var newUser = new User
+                {
+                    UserName = request.Username,
+                    Email = request.Email,
+                    PasswordHash = request.Password // UserService.Register will hash this
+                };
+
+                var (registeredUser, token) = await _authService.Register(newUser);
                 return Ok(new
                 {
                     success = true,
@@ -43,11 +50,11 @@ namespace API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] User user)
+        public async Task<IActionResult> Login([FromBody] API.Models.LoginRequest request)
         {
             try
             {
-                var (loggedInUser, token) = await _authService.Login(user.UserName, user.PasswordHash);
+                var (loggedInUser, token) = await _authService.Login(request.Username, request.Password);
 
                 return Ok(new
                 {

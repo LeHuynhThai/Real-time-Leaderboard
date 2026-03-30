@@ -2,11 +2,10 @@ import { http } from './http'
 
 export async function submitScore(score) {
   try {
-    const response = await http('/api/Score/submit-score', {
+    // API now accepts an object payload { Score: number }
+    const response = await http('/api/Score/save-score', {
       method: 'POST',
-      body: JSON.stringify({
-        Score: score
-      }),
+      body: JSON.stringify({ Score: score }),
     })
     return response
   } catch (error) {
