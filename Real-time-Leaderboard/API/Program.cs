@@ -82,13 +82,11 @@ using (var scope = app.Services.CreateScope())
         var redisRepo = scope.ServiceProvider.GetRequiredService<IRedisScoreRepository>();
         var sqlRepo = scope.ServiceProvider.GetRequiredService<IScoreRepository>();
 
-        if (await redisRepo.IsEmptyAsync())
-        {
-            var sqlScores = await sqlRepo.GetLeaderboard(0, 10000);
-            var scores = sqlScores.Select(s => (s.UserId, s.User.UserName, s.UserScore)).ToList();
-            await redisRepo.SyncFromSqlAsync(scores);
-            Console.WriteLine($"Synced {scores.Count} scores from SQL to Redis");
-        }
+        // Always sync from SQL so Redis never serves stale data across restarts
+        var sqlScores = await sqlRepo.GetLeaderboard(0, int.MaxValue);
+        var scores = sqlScores.Select(s => (s.UserId, s.User.UserName, s.UserScore)).ToList();
+        await redisRepo.SyncFromSqlAsync(scores);
+        Console.WriteLine($"Synced {scores.Count} scores from SQL to Redis");
     }
     catch (Exception ex)
     {
