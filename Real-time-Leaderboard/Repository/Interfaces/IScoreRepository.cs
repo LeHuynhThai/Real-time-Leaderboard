@@ -11,5 +11,7 @@ namespace Repository.Interfaces
         Task<Score> UpdateScore(Score scoreSubmission);
         Task<Score> GetScoreById(int UserId);
         Task<int> GetUserRank(int userId, DateTime updatedAt);
+        Task<List<Score>> GetTopPlayersByPeriod(DateTime from, DateTime to, int skip, int take);
+        Task<int> GetTopPlayersByPeriodCount(DateTime from, DateTime to);
     }
 }

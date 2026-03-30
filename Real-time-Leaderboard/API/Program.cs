@@ -50,7 +50,6 @@ builder.Services.AddScoped<IRedisScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 // Add Authentication Services
-builder.Services.AddTransient<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");

@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import './Header.css'
 
 
@@ -15,6 +15,7 @@ export default function Header({ user, onLogout }) {
         <nav className="site-header__nav">
           <Link to="/home" className="nav__link">Home</Link>
           <Link to="/leaderboard" className="nav__link">Leaderboard</Link>
+          <Link to="/report" className="nav__link">Report</Link>
           <Link to="/play" className="nav__link">Game</Link>
         </nav>
 

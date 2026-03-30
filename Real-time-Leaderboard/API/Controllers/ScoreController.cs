@@ -117,7 +117,52 @@ namespace API.Controllers
                 data = new { rank }
             });
         }
-        
+
+        [AllowAnonymous]
+        [HttpGet("report")]
+        public async Task<IActionResult> GetTopPlayersReport(
+            string period = "weekly",
+            DateTime? from = null,
+            DateTime? to = null,
+            int skip = 0,
+            int take = 50)
+        {
+            var (resolvedFrom, resolvedTo) = ResolvePeriod(period, from, to);
+
+            var result = await _scoreService.GetTopPlayersByPeriod(resolvedFrom, resolvedTo, skip, take);
+            var totalCount = await _scoreService.GetTopPlayersByPeriodCount(resolvedFrom, resolvedTo);
+
+            var response = result.Select((s, index) => new
+            {
+                Rank = skip + index + 1,
+                UserName = s.User?.UserName,
+                Score = s.UserScore,
+                AchievedAt = s.UpdatedAt
+            });
+
+            return Ok(new
+            {
+                success = true,
+                data = response,
+                totalCount,
+                period = new { from = resolvedFrom, to = resolvedTo }
+            });
+        }
+
+        private static (DateTime from, DateTime to) ResolvePeriod(string period, DateTime? from, DateTime? to)
+        {
+            var now = DateTime.UtcNow;
+            return period.ToLower() switch
+            {
+                "daily" => (now.Date, now),
+                "weekly" => (now.AddDays(-7), now),
+                "monthly" => (now.AddDays(-30), now),
+                "all-time" => (DateTime.MinValue, now),
+                "custom" => (from ?? DateTime.MinValue, to ?? now),
+                _ => (now.AddDays(-7), now)
+            };
+        }
+
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst("userId")?.Value ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

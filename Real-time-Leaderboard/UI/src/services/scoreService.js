@@ -66,3 +66,17 @@ export async function getMyRank() {
     throw new Error(error.message || 'Error fetching my rank')
   }
 }
+
+// Fetch top players report filtered by period
+export async function getTopPlayersReport(period = 'weekly', from = null, to = null, skip = 0, take = 50) {
+  try {
+    const params = new URLSearchParams({ period, skip, take })
+    if (from) params.set('from', from)
+    if (to) params.set('to', to)
+    const response = await http(`/api/Score/report?${params.toString()}`)
+    return response
+  } catch (error) {
+    console.error('Error fetching top players report:', error)
+    throw new Error(error.message || 'Error fetching top players report')
+  }
+}

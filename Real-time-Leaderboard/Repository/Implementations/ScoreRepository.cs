@@ -130,6 +130,44 @@ namespace Repository.Implementations
             return existingScore;
         }
 
+        public async Task<List<Score>> GetTopPlayersByPeriod(DateTime from, DateTime to, int skip, int take)
+        {
+            var query = _context.Score
+                .AsNoTracking()
+                .Where(s => s.Status == SubmissionStatus.Approved && s.UpdatedAt >= from && s.UpdatedAt <= to)
+                .GroupBy(s => s.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    BestScore = g.Max(x => x.UserScore),
+                    AchievedAt = g.Max(x => x.UpdatedAt),
+                    User = g.OrderByDescending(x => x.UserScore).Select(x => x.User).FirstOrDefault()
+                })
+                .OrderByDescending(x => x.BestScore)
+                .Skip(skip)
+                .Take(take);
+
+            var list = await query.ToListAsync();
+
+            return list.Select(x => new Score
+            {
+                UserId = x.UserId,
+                UserScore = x.BestScore,
+                UpdatedAt = x.AchievedAt,
+                User = x.User
+            }).ToList();
+        }
+
+        public async Task<int> GetTopPlayersByPeriodCount(DateTime from, DateTime to)
+        {
+            return await _context.Score
+                .AsNoTracking()
+                .Where(s => s.Status == SubmissionStatus.Approved && s.UpdatedAt >= from && s.UpdatedAt <= to)
+                .Select(s => s.UserId)
+                .Distinct()
+                .CountAsync();
+        }
+
         public async Task<int> GetUserRank(int userId, DateTime updatedAt)
         {
             // Determine the user's best approved score

@@ -109,5 +109,15 @@ namespace Service.Implementations
             var rank = await _redisScoreRepository.GetUserRankAsync(UserId);
             return rank > 0 ? rank : await _scoreRepository.GetUserRank(UserId, DateTime.MinValue) + 1;
         }
+
+        public async Task<List<Score>> GetTopPlayersByPeriod(DateTime from, DateTime to, int skip, int take)
+        {
+            return await _scoreRepository.GetTopPlayersByPeriod(from, to, skip, take);
+        }
+
+        public async Task<int> GetTopPlayersByPeriodCount(DateTime from, DateTime to)
+        {
+            return await _scoreRepository.GetTopPlayersByPeriodCount(from, to);
+        }
     }
 }

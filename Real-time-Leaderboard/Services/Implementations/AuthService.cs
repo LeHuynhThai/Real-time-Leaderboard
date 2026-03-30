@@ -1,17 +1,22 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using Repository.Entities;
 using Service.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Service.Implementations
 {
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private readonly IAuthTokenService _authTokenService;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(IUserService userService, IAuthTokenService authTokenService)
+        public AuthService(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
-            _authTokenService = authTokenService;
+            _configuration = configuration;
         }
 
         public async Task<(User user, string token)> Login(string username, string password)
@@ -30,7 +35,33 @@ namespace Service.Implementations
 
         public string GenerateToken(User user)
         {
-            return _authTokenService.GenerateToken(user);
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = jwtSettings["Key"];
+            var issuer = jwtSettings["Issuer"];
+            var audience = jwtSettings["Audience"];
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var keyBytes = Encoding.UTF8.GetBytes(key ?? string.Empty);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim("userId", user.Id.ToString())
+            };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(24),
+                Issuer = issuer,
+                Audience = audience,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

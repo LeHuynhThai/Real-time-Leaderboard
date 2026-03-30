@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import Home from './pages/Home'
 import Leaderboard from './pages/Leaderboard'
+import Report from './pages/Report'
 import SignIn from './pages/SignIn'
 import SignUp from './pages/SignUp'
 import 'react-toastify/dist/ReactToastify.css'
@@ -30,6 +31,7 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/play" element={<Game />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/report" element={<Report />} />
       </Routes>
       <ToastContainer
         position="top-right"
