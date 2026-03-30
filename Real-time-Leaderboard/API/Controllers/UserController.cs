@@ -8,13 +8,11 @@ namespace API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly IJwtTokenService _jwtTokenService;
+        private readonly IAuthService _authService;
 
-        public UserController(IUserService userService, IJwtTokenService jwtTokenService)
+        public UserController(IAuthService authService)
         {
-            _userService = userService;
-            _jwtTokenService = jwtTokenService;
+            _authService = authService;
         }
 
         [HttpPost("register")]
@@ -22,8 +20,21 @@ namespace API.Controllers
         {
             try
             {
-                var result = await _userService.Register(user);
-                return Ok(new { success = true, data = result });
+                var (registeredUser, token) = await _authService.Register(user);
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        user = new
+                        {
+                            userId = registeredUser.Id,
+                            userName = registeredUser.UserName,
+                            email = registeredUser.Email
+                        },
+                        token = token
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -36,10 +47,7 @@ namespace API.Controllers
         {
             try
             {
-                var loggedInUser = await _userService.Login(user.UserName, user.PasswordHash);
-
-                // Generate JWT token
-                var token = _jwtTokenService.GenerateToken(loggedInUser);
+                var (loggedInUser, token) = await _authService.Login(user.UserName, user.PasswordHash);
 
                 return Ok(new
                 {

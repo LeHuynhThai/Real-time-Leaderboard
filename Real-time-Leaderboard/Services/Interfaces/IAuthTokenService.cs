@@ -1,8 +1,8 @@
-﻿using Repository.Entities;
+using Repository.Entities;
 
 namespace Service.Interfaces
 {
-    public interface IJwtTokenService
+    public interface IAuthTokenService
     {
         string GenerateToken(User user);
     }

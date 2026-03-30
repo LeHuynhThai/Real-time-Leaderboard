@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Entities;
 using Service.Interfaces;
@@ -8,14 +8,14 @@ using System.Text;
 
 namespace Service.Implementations
 {
-    public class JwtTokenService : IJwtTokenService
+    public class AuthTokenService : IAuthTokenService
     {
         private readonly IConfiguration _configuration;
         private readonly string _key;
         private readonly string _issuer;
         private readonly string _audience;
 
-        public JwtTokenService(IConfiguration configuration)
+        public AuthTokenService(IConfiguration configuration)
         {
             _configuration = configuration;
             _key = _configuration["Jwt:Key"];
