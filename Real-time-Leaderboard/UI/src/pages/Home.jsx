@@ -53,7 +53,7 @@ export default function Home() {
     }
 
     try {
-      const lbRes = await getLeaderboard(10)
+      const lbRes = await getLeaderboard(0, 10)
       setLeaderboard(Array.isArray(lbRes?.data) ? lbRes.data : [])
     } finally {
       setLoading(false)
@@ -119,9 +119,9 @@ export default function Home() {
             ) : (
               <div className="leaderboard-list">
                 {leaderboard.map((player, index) => (
-                  <div key={index} className={`leaderboard-item ${index < 3 ? 'top-three' : ''}`}>
+                  <div key={index} className={`leaderboard-item ${player.rank <= 3 ? 'top-three' : ''}`}>
                     <div className="rank">
-                      {index < 3 ? ['🥇', '🥈', '🥉'][index] : `#${player.rank}`}
+                      {player.rank <= 3 ? ['🥇', '🥈', '🥉'][player.rank - 1] : `#${player.rank}`}
                     </div>
                     <div className="player-info">
                       <span className="username">{player.userName}</span>
