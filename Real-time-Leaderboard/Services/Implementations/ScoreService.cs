@@ -8,14 +8,12 @@ namespace Service.Implementations
     {
         private readonly IScoreRepository _scoreRepository;
         private readonly IUserRepository _userRepository;
-        private readonly INotificationService _notification;
         private readonly IRedisScoreRepository _redisScoreRepository;
 
-        public ScoreService(IScoreRepository scoreSubmissionRepository, IUserRepository userRepository, INotificationService notification, IRedisScoreRepository redisScoreRepository)
+        public ScoreService(IScoreRepository scoreSubmissionRepository, IUserRepository userRepository, IRedisScoreRepository redisScoreRepository)
         {
             _scoreRepository = scoreSubmissionRepository;
             _userRepository = userRepository;
-            _notification = notification;
             _redisScoreRepository = redisScoreRepository;
         }
 
@@ -93,16 +91,6 @@ namespace Service.Implementations
                 {
                     await _redisScoreRepository.UpdateScoreAsync(UserId, user.UserName, score);
                 }
-
-                // send leaderboard update to all connected users
-                await _notification.NotifyLeaderboardUpdated(new
-                {
-                    reason = "updated",
-                    userId = updated.UserId,
-                    username = updated.User.UserName,
-                    score = updated.UserScore,
-                    updatedAt = updated.UpdatedAt
-                });
 
                 return updated;
             }

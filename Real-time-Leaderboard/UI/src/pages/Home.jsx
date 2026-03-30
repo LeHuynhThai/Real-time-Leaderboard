@@ -5,7 +5,6 @@ import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../ser
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMyScore, getLeaderboard, getMyRank } from '../services/scoreService.js'
-import { startLeaderboardConnection, stopLeaderboardConnection, getConnection } from '../services/signalr.js'
 import { toast } from 'react-toastify'
 export default function Home() {  
   const navigate = useNavigate()
@@ -24,46 +23,13 @@ export default function Home() {
   }, [navigate])
 
   useEffect(() => {
-    const setupSignalR = async () => {
-      try {
-        await startLeaderboardConnection()
-
-        const conn = getConnection()
-
-        conn.on('LeaderboardUpdate', async (data) => {
-          console.log('Real time update received in Home', data)
-          
-          // show toast notification
-          toast.success(`${data.username} has scored ${data.score}!`, {
-            position: 'top-right',
-            autoClose: 3000,
-          })
-
-          // fetch leaderboard
-          await fetchLeaderboard()
-
-          // update personal rank when leaderboard is updated
-          try {
-            const rankRes = await getMyRank()
-            if (rankRes?.success && rankRes?.data) {
-              setUser(prev => ({ ...prev, rank: rankRes.data.rank }))
-            }
-          } catch (e) {
-            console.error('Failed to update personal rank:', e)
-          }
-        })
-      } catch (error) {
-        console.error('SignalR connection failed in Home:', error)
-      }
-    }
-    setupSignalR()
+    // Set up polling interval to refresh leaderboard every 8 seconds
+    const pollInterval = setInterval(() => {
+      fetchLeaderboard()
+    }, 8000)
 
     return () => {
-      const conn = getConnection()
-      if (conn) {
-        conn.off('LeaderboardUpdate')
-      }
-      stopLeaderboardConnection()
+      clearInterval(pollInterval)
     }
   }, [])
 

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import Header from '../components/Header.jsx'
 import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
 import { getLeaderboard, searchPlayers } from '../services/scoreService.js'
-import { startLeaderboardConnection, stopLeaderboardConnection, getConnection } from '../services/signalr.js'
-import { toast } from 'react-toastify'
 
 const PAGE_SIZE = 50
 
@@ -34,33 +32,17 @@ export default function Leaderboard() {
   }, [navigate])
 
   useEffect(() => {
-    const setupSignalR = async () => {
-      try {
-        await startLeaderboardConnection()
-        const conn = getConnection()
-        conn.on('LeaderboardUpdate', async (data) => {
-          toast.info(`${data.username} has scored ${data.score}!`, {
-            position: 'top-right',
-            autoClose: 3000,
-          })
-          if (!searchQuery) {
-            setSkip(0)
-            setLeaderboard([])
-            await fetchLeaderboard(0)
-          }
-        })
-      } catch (error) {
-        console.error('SignalR connection failed in Leaderboard:', error)
-      }
+    // Set up polling interval to refresh leaderboard every 8 seconds when not searching
+    if (searchQuery) {
+      return // Don't poll when searching
     }
-    setupSignalR()
+
+    const pollInterval = setInterval(() => {
+      fetchLeaderboard(0)
+    }, 8000)
 
     return () => {
-      const conn = getConnection()
-      if (conn) {
-        conn.off('LeaderboardUpdate')
-      }
-      stopLeaderboardConnection()
+      clearInterval(pollInterval)
     }
   }, [searchQuery])
 

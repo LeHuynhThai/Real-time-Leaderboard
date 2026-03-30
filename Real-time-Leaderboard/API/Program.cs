@@ -1,5 +1,4 @@
-﻿using API.SignalR;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Repository.Data;
@@ -50,11 +49,6 @@ builder.Services.AddScoped<IScoreRepository, SqlScoreRepository>();
 builder.Services.AddScoped<IRedisScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
-builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
-
-
-// Add SignalR
-builder.Services.AddSignalR();
 // Add JWT Token Service
 builder.Services.AddTransient<IJwtTokenService, JwtTokenService>();
 // Configure JWT
@@ -72,20 +66,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
-    };
-    // Allow SignalR to receive token via query string when using WebSockets
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            var accessToken = context.Request.Query["access_token"];
-            var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-            {
-                context.Token = accessToken;
-            }
-            return Task.CompletedTask;
-        }
     };
 });
 
@@ -193,6 +173,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.MapHub<LeaderboardHub>("/hubs/leaderboard");
 
 app.Run();
