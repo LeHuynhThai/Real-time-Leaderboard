@@ -47,12 +47,11 @@
 
 ```bash
 git clone https://github.com/yourusername/Real-time-Leaderboard.git
-cd Real-time-Leaderboard
 ```
 
 ### 🐳 Bước 2: Khởi chạy với Docker Compose
 
-Từ thư mục gốc (chứa `docker-compose.yml`), chạy:
+Từ thư mục gốc Real-time-Leaderboard (chứa `docker-compose.yml`), chạy:
 
 ```bash
 docker compose up --build
