@@ -21,7 +21,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddSingleton<IRedisConnectionManager>(sp =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Redis");
-    return new RedisConnectionManager(connectionString);
+    return new RedisConnectionManager(connectionString ?? throw new InvalidOperationException("Redis connection string is not configured."));
 });
 
 // Add CORS
@@ -37,7 +37,6 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container.
-
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     // Prevent cycles when serializing EF Core navigation properties
@@ -49,11 +48,10 @@ builder.Services.AddScoped<IScoreRepository, SqlScoreRepository>();
 builder.Services.AddScoped<IRedisScoreRepository, RedisScoreRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
-// Add Authentication Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-// Configure Authentication and Authorization
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -69,9 +67,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 });
 
-// Configure Authorization
 builder.Services.AddAuthorization();
-
 var app = builder.Build();
 
 // Startup: Sync data from SQL to Redis if Redis is empty
@@ -100,6 +96,17 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // Apply any pending EF Core migrations (useful in containerized setups)
+        try
+        {
+            await context.Database.MigrateAsync();
+            Console.WriteLine("Database migrations applied.");
+        }
+        catch (Exception migrateEx)
+        {
+            Console.WriteLine($"Warning: Applying migrations failed - {migrateEx.Message}");
+        }
 
         // Check if database already has data
         if (!context.User.Any() && !context.Score.Any())
@@ -171,5 +178,4 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 app.Run();

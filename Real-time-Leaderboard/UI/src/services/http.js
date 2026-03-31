@@ -1,4 +1,4 @@
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://localhost:7034'
+const BASE_URL = (typeof window !== 'undefined' && window.__ENV__ && window.__ENV__.REACT_APP_API_URL) || process.env.REACT_APP_API_URL || 'http://localhost:5000'
 
 export async function http(path, options = {}) {
 
