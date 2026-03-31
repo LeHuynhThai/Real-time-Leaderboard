@@ -18,5 +18,5 @@ bin-release/
 # information for Eclipse / Flash Builder.
 
 .vs/
-
 .github
+.dockerignore
