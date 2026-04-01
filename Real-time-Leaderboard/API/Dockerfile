@@ -12,7 +12,7 @@ COPY --from=build /app/publish .
 
 # Copy wait script
 COPY API/wait-for.sh /wait-for.sh
-RUN chmod +x /wait-for.sh
+RUN sed -i 's/\r//' /wait-for.sh && chmod +x /wait-for.sh
 
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
