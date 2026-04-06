@@ -37,6 +37,15 @@ Bảng xếp hạng thời gian thực là một nền tảng quản lý bảng 
 - Health checks cho tất cả các dịch vụ
 - Tự động chạy migration và seeding cơ sở dữ liệu
 
+## Công nghệ
+
+- Backend: ASP.NET Core, Entity Framework Core, C#
+- Database: SQL Server
+- Cache: Redis (StackExchange.Redis)
+- Frontend: React 19, React Router, Material UI, JavaScript (JSX)
+- Authentication: JWT, BCrypt
+- Containerization: Docker Compose
+
 ---
 
 ## Hướng dẫn cài đặt
