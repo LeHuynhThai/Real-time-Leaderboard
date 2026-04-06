@@ -1,63 +1,70 @@
-# 🎮 Real-time Leaderboard
+# Bảng xếp hạng thời gian thực
 
-## 📌 Giới thiệu
+## Giới thiệu
 
-**Real-time Leaderboard** là một nền tảng quản lý bảng xếp hạng theo thời gian thực cho web game dinosaur tích hợp sẵn, cho phép người chơi đăng ký, đăng nhập, chơi game và xem điểm số của mình cũng như của những người chơi khác trên bảng xếp hạng.
-
----
-
-## ✨ Tính năng nổi bật
-
-✅ **Xác thực an toàn**
-   - JWT token-based authentication
-   - BCrypt hashing cho mật khẩu
-   - CORS policy tùy chỉnh
-
-✅ **Leaderboard Real-time**
-   - Redis sorted set cho tốc độ O(log N)
-   - Phân trang hỗ trợ (skip/take)
-   - Tự động sync SQL → Redis khi khởi động
-
-✅ **Game T-Rex tích hợp**
-   - Trò chơi dinosaur interactive từ Chromium
-   - Submit score tự động sau khi game kết thúc
-
-✅ **Full-stack UI**
-   - React 19 frontend
-   - Material-UI components
-   - Responsive design
-
-✅ **Containerized & Production-ready**
-   - Docker Compose orchestration
-   - Health checks cho tất cả services
-   - Automatic database migration & seeding
-   - Environment-driven configuration
+Bảng xếp hạng thời gian thực là một nền tảng quản lý bảng xếp hạng cho trò chơi web T-Rex, cho phép người chơi đăng ký, đăng nhập, chơi và xem điểm của mình cũng như của người khác.
 
 ---
 
-## 🚀 Hướng dẫn cài đặt
+## Tính năng nổi bật
 
-### ✋ Yêu cầu hệ thống
+**Xác thực an toàn**
 
-- **Docker** ≥ 20.10 & **Docker Compose** ≥ 1.29+
-  - [Install Docker Desktop](https://www.docker.com/products/docker-desktop)
-- **Git** (để clone repo)
+- Xác thực dựa trên token JWT
+- Hash mật khẩu bằng BCrypt
+- CORS cấu hình cho frontend React
 
-### 📥 Bước 1: Clone & Chuẩn bị
+**Bảng xếp hạng thời gian thực**
+
+- Sử dụng Redis sorted set với độ phức tạp O(log N)
+- Hỗ trợ phân trang (skip/take)
+- Tự động đồng bộ SQL → Redis khi khởi động
+
+**Tích hợp trò chơi T-Rex**
+
+- Game T-Rex được tích hợp sẵn
+- Gửi điểm tự động sau khi kết thúc
+
+**Giao diện người dùng**
+
+- Frontend React 19
+- Sử dụng Material-UI
+- Responsive và thân thiện với thiết bị di động
+
+**Đóng gói bằng Docker & Sẵn sàng triển khai**
+
+- Set up nhanh chóng với Docker Compose
+- Health checks cho tất cả các dịch vụ
+- Tự động chạy migration và seeding cơ sở dữ liệu
+
+---
+
+## Hướng dẫn cài đặt
+
+### Yêu cầu hệ thống
+
+- Docker ≥ 20.10 & Docker Compose ≥ 1.29+
+  - [Cài Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Git (để clone repository)
+
+### Bước 1: Clone & Chuẩn bị
 
 ```bash
 git clone https://github.com/yourusername/Real-time-Leaderboard.git
 ```
 
-### 🐳 Bước 2: Khởi chạy với Docker Compose
+### Bước 2: Khởi chạy với Docker Compose
 
-Từ thư mục gốc Real-time-Leaderboard (chứa `docker-compose.yml`), chạy:
+Từ thư mục gốc `Real-time-Leaderboard` (chứa `docker-compose.yml`), chạy:
 
 ```bash
 docker compose up --build
 ```
 
-**Lần đầu sẽ tốn thời gian** (pull images, build, restore NuGet packages, npm install, etc.)
+Lần đầu sẽ tốn thời gian (pull images, build, restore NuGet packages, npm install, v.v.)
 
-### ✅ Bước 3: Truy cập ứng dụng
-- UI: http://localhost:3000
+### Bước 3: Truy cập ứng dụng
+
+- Giao diện: http://localhost:3000
+
+image1.png
