@@ -67,4 +67,18 @@ Lần đầu sẽ tốn thời gian (pull images, build, restore NuGet packages,
 
 - Giao diện: http://localhost:3000
 
-image1.png
+## Demo
+
+Dưới đây là một số ảnh chụp màn hình demo của ứng dụng (thư mục `DemoPhoto`):
+
+![Đăng nhập](DemoPhoto/image1.png)
+
+![Đăng ký](DemoPhoto/image2.png)
+
+![Leaderboard tuần](DemoPhoto/image3.png)
+
+![Game T-Rex](DemoPhoto/image4.png)
+
+![Danh sách người chơi](DemoPhoto/image5.png)
+
+![Dashboard tổng quan](DemoPhoto/image6.png)
