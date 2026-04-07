@@ -1,73 +1,81 @@
-import { Link } from 'react-router-dom'
-import '../styles/Home.css'
-import Header from '../components/Header.jsx'
-import { isAuthenticated, getCurrentUser, removeToken, removeUser } from '../services/auth.js'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getMyScore, getLeaderboard, getMyRank } from '../services/scoreService.js'
-import { toast } from 'react-toastify'
-export default function Home() {  
-  const navigate = useNavigate()
-  const [user, setUser] = useState(null)
-  const [leaderboard, setLeaderboard] = useState([])
-  const [loading, setLoading] = useState(true)
+import { Link } from "react-router-dom";
+import "../styles/Home.css";
+import Header from "../components/Header.jsx";
+import {
+  isAuthenticated,
+  getCurrentUser,
+  removeToken,
+  removeUser,
+} from "../services/auth.js";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  getMyScore,
+  getLeaderboard,
+  getMyRank,
+} from "../services/scoreService.js";
+export default function Home() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if(isAuthenticated()) {
-      const currentUser = getCurrentUser()
-      setUser(currentUser)
-      fetchLeaderboard()
+    if (isAuthenticated()) {
+      const currentUser = getCurrentUser();
+      setUser(currentUser);
+      fetchLeaderboard();
     } else {
-      navigate('/sign-in')
+      navigate("/sign-in");
     }
-  }, [navigate])
+  }, [navigate]);
 
   useEffect(() => {
     // Set up polling interval to refresh leaderboard every 8 seconds
     const pollInterval = setInterval(() => {
-      fetchLeaderboard()
-    }, 8000)
+      fetchLeaderboard();
+    }, 8000);
 
     return () => {
-      clearInterval(pollInterval)
-    }
-  }, [])
+      clearInterval(pollInterval);
+    };
+  }, []);
 
   const fetchLeaderboard = async () => {
     try {
-      const res = await getMyScore()
+      const res = await getMyScore();
       if (res?.success && res?.data) {
-        setUser(prev => ({ ...prev, bestScore: res.data.score }))
+        setUser((prev) => ({ ...prev, bestScore: res.data.score }));
       }
     } catch (e) {
       // ignore error, continue to fetch leaderboard
     }
 
     try {
-      const rankRes = await getMyRank()
+      const rankRes = await getMyRank();
       if (rankRes?.success && rankRes?.data) {
-        setUser(prev => ({ ...prev, rank: rankRes.data.rank }))
+        setUser((prev) => ({ ...prev, rank: rankRes.data.rank }));
       }
     } catch (e) {
       // ignore
     }
 
     try {
-      const lbRes = await getLeaderboard(0, 10)
-      setLeaderboard(Array.isArray(lbRes?.data) ? lbRes.data : [])
+      const lbRes = await getLeaderboard(0, 10);
+      setLeaderboard(Array.isArray(lbRes?.data) ? lbRes.data : []);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = () => {
-    removeToken()
-    removeUser()
-    navigate('/sign-in')
-  }
+    removeToken();
+    removeUser();
+    navigate("/sign-in");
+  };
 
   if (!isAuthenticated()) {
-    return null
+    return null;
   }
 
   return (
@@ -84,20 +92,23 @@ export default function Home() {
               <div className="stat-icon">🏆</div>
               <div className="stat-content">
                 <h3>Your Best Score</h3>
-                <p className="stat-value">{user?.bestScore || '0'}</p>
+                <p className="stat-value">{user?.bestScore || "0"}</p>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon">📊</div>
               <div className="stat-content">
                 <h3>Your Rank</h3>
-                <p className="stat-value">#{user?.rank || 'N/A'}</p>
+                <p className="stat-value">#{user?.rank || "N/A"}</p>
               </div>
             </div>
           </div>
 
           {/* Play Game Section */}
-          <div className="play-game-section" style={{ marginTop: 24, textAlign: 'center' }}>
+          <div
+            className="play-game-section"
+            style={{ marginTop: 24, textAlign: "center" }}
+          >
             <Link to="/play" className="play-game-button">
               <div className="play-icon">🦕</div>
               <div className="play-content">
@@ -112,16 +123,23 @@ export default function Home() {
           <div className="leaderboard-preview">
             <div className="section-header">
               <h2>Top Players</h2>
-              <Link to="/leaderboard" className="view-all-link">View All →</Link>
+              <Link to="/leaderboard" className="view-all-link">
+                View All →
+              </Link>
             </div>
             {loading ? (
               <div className="loading">Loading leaderboard...</div>
             ) : (
               <div className="leaderboard-list">
                 {leaderboard.map((player, index) => (
-                  <div key={index} className={`leaderboard-item ${player.rank <= 3 ? 'top-three' : ''}`}>
+                  <div
+                    key={index}
+                    className={`leaderboard-item ${player.rank <= 3 ? "top-three" : ""}`}
+                  >
                     <div className="rank">
-                      {player.rank <= 3 ? ['🥇', '🥈', '🥉'][player.rank - 1] : `#${player.rank}`}
+                      {player.rank <= 3
+                        ? ["🥇", "🥈", "🥉"][player.rank - 1]
+                        : `#${player.rank}`}
                     </div>
                     <div className="player-info">
                       <span className="username">{player.userName}</span>
@@ -135,5 +153,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }

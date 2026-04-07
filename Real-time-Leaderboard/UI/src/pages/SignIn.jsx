@@ -1,75 +1,75 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import '../styles/SignIn.css'
-import { login, setToken, setUser } from '../services/auth'
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/SignIn.css";
+import { login } from "../services/auth";
 
 export default function SignIn() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  })
-  
+    username: "",
+    password: "",
+  });
+
   // Error messages
-  const [errors, setErrors] = useState({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle form changes
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
-    })
+      [e.target.name]: e.target.value,
+    });
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
-        [e.target.name]: ''
-      })
+        [e.target.name]: "",
+      });
     }
-  }
+  };
 
   // Validate form
   const validateForm = () => {
-    const newErrors = {}
+    const newErrors = {};
     if (!formData.username.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập'
+      newErrors.username = "Vui lòng nhập tên đăng nhập";
     }
     if (!formData.password.trim()) {
-      newErrors.password = 'Vui lòng nhập mật khẩu'
+      newErrors.password = "Vui lòng nhập mật khẩu";
     }
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setIsLoading(true)
-    setErrors({})
+    setIsLoading(true);
+    setErrors({});
 
     try {
-      console.log('Attempting login with:', formData.username)
-      const response = await login(formData.username, formData.password)
-      console.log('Login response:', response)
-      
+      console.log("Attempting login with:", formData.username);
+      const response = await login(formData.username, formData.password);
+      console.log("Login response:", response);
+
       if (response.success && response.data) {
         // JWT token and user data are now saved in auth.js login function
-        console.log('Login successful, token saved')
-        navigate('/home')
+        console.log("Login successful, token saved");
+        navigate("/home");
       } else {
-        console.log('Login failed:', response.message)
-        setErrors({ general: response.message || 'Đăng nhập thất bại' })
+        console.log("Login failed:", response.message);
+        setErrors({ general: response.message || "Đăng nhập thất bại" });
       }
     } catch (error) {
-      console.error('Login error:', error)
-      setErrors({ general: error.message || 'Có lỗi xảy ra khi đăng nhập' })
+      console.error("Login error:", error);
+      setErrors({ general: error.message || "Có lỗi xảy ra khi đăng nhập" });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <main className="signin">
@@ -81,50 +81,65 @@ export default function SignIn() {
           </div>
 
           {errors.general && (
-            <div className="error__message" style={{ textAlign: 'center', marginBottom: '1rem' }}>
+            <div
+              className="error__message"
+              style={{ textAlign: "center", marginBottom: "1rem" }}
+            >
               {errors.general}
             </div>
           )}
 
           <form className="signin__form" onSubmit={handleSubmit}>
             <div className="form__group">
-              <label htmlFor="username" className="form__label">Tên đăng nhập</label>
+              <label htmlFor="username" className="form__label">
+                Tên đăng nhập
+              </label>
               <input
                 type="text"
                 id="username"
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                className={`form__input ${errors.username ? 'error' : ''}`}
+                className={`form__input ${errors.username ? "error" : ""}`}
                 placeholder="Nhập tên đăng nhập của bạn"
                 required
               />
-              {errors.username && <span className="error__message">{errors.username}</span>}
+              {errors.username && (
+                <span className="error__message">{errors.username}</span>
+              )}
             </div>
 
             <div className="form__group">
-              <label htmlFor="password" className="form__label">Mật khẩu</label>
+              <label htmlFor="password" className="form__label">
+                Mật khẩu
+              </label>
               <input
                 type="password"
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`form__input ${errors.password ? 'error' : ''}`}
+                className={`form__input ${errors.password ? "error" : ""}`}
                 placeholder="Nhập mật khẩu"
                 required
               />
-              {errors.password && <span className="error__message">{errors.password}</span>}
+              {errors.password && (
+                <span className="error__message">{errors.password}</span>
+              )}
             </div>
 
-            <button type="submit" className="btn btn--primary" disabled={isLoading}>
-              {isLoading ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang đăng nhập..." : "Đăng Nhập"}
             </button>
           </form>
 
           <div className="signin__footer">
             <p className="signin__text">
-              Chưa có tài khoản? 
+              Chưa có tài khoản?
               <Link to="/sign-up" className="signin__link">
                 Đăng ký ngay
               </Link>
@@ -133,5 +148,5 @@ export default function SignIn() {
         </div>
       </div>
     </main>
-  )
+  );
 }
